@@ -1,0 +1,70 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0042)http://pubserv.oclc.org/srw/GSAFD.ini.html -->
+<HTML><HEAD><TITLE>ZBase Database.ini file for the GSAFD Thesaurus</TITLE>
+<META http-equiv=Content-Type content="text/html; charset=utf-8">
+<META content="MSHTML 6.00.2900.2802" name=GENERATOR></HEAD>
+<BODY><PRE>[database]
+ZBaseDbType          = ORG.oclc.db.DbNewton
+class                = ORG.oclc.pears.pears
+pdbFile              = d:/dbs/GSAFD/GSAFDZthes2.pdb
+
+[attributes]
+type1                = BIB1Attributes
+
+[BIB1Attributes]
+OID                  = BIB1
+default              = allIndex
+parse_mode           = 0
+browse_default       = 0
+stopwords            = default
+operator             = 0
+
+index*               = allIndex
+index*               = termID
+index*               = termName
+index*               = termQualifer
+index*               = termNotes
+
+[allIndex]
+use                  = 1
+structure            = 2
+alternateId          = 1
+abb                  = ba:
+longName             = Basic
+cleanForQuery        = false
+filter               = ORG.oclc.pears.IndexRoutines.Words
+
+[termID]
+use                  = 2
+structure            = 1
+alternateId          = 2
+abb                  = tid:
+cleanForQuery        = false
+filter               = ORG.oclc.pears.IndexRoutines.Phrase
+
+[termName]
+use                  = 3
+structure            = 1
+alternateId          = 3
+abb                  = tnm:
+cleanForQuery        = false
+filter               = ORG.oclc.pears.IndexRoutines.Phrase
+
+[termQualifier]
+use                  = 4
+structure            = 1
+alternateId          = 4
+abb                  = tq:
+cleanForQuery        = false
+filter               = ORG.oclc.pears.IndexRoutines.Phrase
+
+###   Word indexes for searching   ###
+
+[termNotes]
+use                  = 5
+structure            = 2
+alternateId          = 5
+abb                  = tnt:
+cleanForQuery        = false
+filter               = ORG.oclc.pears.IndexRoutines.Words
+</PRE></BODY></HTML>

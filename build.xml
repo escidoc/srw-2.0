@@ -1,0 +1,160 @@
+<?xml version="1.0"?>
+
+<project name="SRW" basedir="." default="compile_srw">
+
+    <target name="init">
+        <property file="build.properties"/>
+        <mkdir dir="src"/>
+        <mkdir dir="build"/>
+        <mkdir dir="dist"/>
+        </target>
+
+    <target name="clean" depends="init" description="Clean all build products.">
+        <delete dir="build"/>
+        <delete dir="dist"/>
+        </target>
+
+    <target name="compileSRW" depends="init">
+        <javac srcdir="src" destdir="build" deprecation="true" debug="on"
+           includes="gov/**/*.java ORG/oclc/os/SRW/*.java">
+              <classpath>
+                  <fileset dir="lib">
+                      <include name="**/*.jar"/>
+                      </fileset>
+                  </classpath>
+            </javac>
+        </target>
+
+    <target name="jarSRW" depends="compileSRW">
+        <jar jarfile="dist/SRW.jar" basedir="build" includes="gov/**/*.class ORG/oclc/os/SRW/*.class"/>
+        </target>
+
+    <target name="compileSRWPears" depends="jarSRW">
+        <javac srcdir="src" destdir="build" deprecation="true" debug="on"
+          includes="ORG/oclc/os/SRW/Pears/*.java">
+            <classpath>
+                <fileset dir="lib">
+                    <include name="**/*.jar"/>
+                    </fileset>
+                <fileset dir="${pearsLib}">
+                    <include name="**/*.jar"/>
+                    </fileset>
+                </classpath>
+            </javac>
+        <delete file="dist/SRWPears.jar"/>
+        <jar jarfile="dist/SRWPears.jar" basedir="build" includes="ORG/oclc/os/SRW/Pears/*.class"/>
+        </target>
+
+    <target name="compileSRWDSpaceLucene" depends="jarSRW">
+        <javac srcdir="src" destdir="build" deprecation="true" debug="on"
+          includes="ORG/oclc/os/SRW/DSpaceLucene/*.java">
+            <classpath>
+                <fileset dir="lib">
+                    <include name="**/*.jar"/>
+                    </fileset>
+                <fileset dir="${dspaceLib}">
+                    <include name="**/*.jar"/>
+                    </fileset>
+                </classpath>
+            </javac>
+        <delete file="dist/SRWDSpaceLucene.jar"/>
+        <jar jarfile="dist/SRWDSpaceLucene.jar" basedir="build" includes="ORG/oclc/os/SRW/DSpaceLucene/*.class"/>
+        </target>
+
+    <target name="checkout" depends="init">
+        <cvs cvsRoot=":pserver:anonymous@pubserv.oclc.org:/home/CVS/srw/cvsroot"
+            command="checkout" dest="src" package="all"/>
+        </target>
+        
+    <target name="war" depends="jarSRW">
+        <fail unless="webappName" message="You need to specify a webappName in the build.properties file"/>
+        <delete file="dist/${webappName}.war"/>
+        <jar jarfile="dist/${webappName}.war">
+            <zipfileset dir="dist" includes="SRW.jar" prefix="WEB-INF/lib"/>
+            <zipfileset dir="conf" includes="*.wsdd web.xml" prefix="WEB-INF"/>
+            <zipfileset dir="conf" includes="SRWServer.props" prefix="WEB-INF/classes"/>
+            <zipfileset dir="conf" includes="*.xsl"/>
+            </jar>
+        <antcall target="addSupportJarsFromSupportLib"/>
+        <antcall target="addSupportJarsFromDistributedLib"/>
+        <antcall target="addDSpace"/>
+        <antcall target="addPears"/>
+        </target>
+
+    <target name="addSupportJarsFromSupportLib" if="supportLib">
+        <jar jarfile="dist/${webappName}.war" update="true">
+            <zipfileset dir="${supportLib}" includes="*.jar" prefix="WEB-INF/lib"/>
+            </jar>
+        </target>
+
+    <target name="addSupportJarsFromDistributedLib">
+        <jar jarfile="dist/${webappName}.war" update="true" duplicate="preserve">
+            <zipfileset dir="lib" includes="*.jar" prefix="WEB-INF/lib"/>
+            </jar>
+        </target>
+
+    <target name="addDSpace" if="dspaceLib">
+        <antcall target="compileSRWDSpaceLucene"/>
+        <jar jarfile="dist/${webappName}.war" update="true">
+            <zipfileset dir="dist" includes="*SRWDSpaceLucene.jar" prefix="WEB-INF/lib"/>
+            <zipfileset dir="${dspaceLib}" includes="*.jar" prefix="WEB-INF/lib"/>
+            </jar>
+        </target>
+
+    <target name="addPears" if="pearsLib">
+        <antcall target="compileSRWPears"/>
+        <jar jarfile="dist/${webappName}.war" update="true">
+            <zipfileset dir="dist" includes="*SRWPears.jar" prefix="WEB-INF/lib"/>
+            <zipfileset dir="${pearsLib}" includes="*.jar" prefix="WEB-INF/lib"/>
+            </jar>
+        <antcall target="addDbutils"/>
+        <antcall target="addGwen"/>
+        </target>
+
+    <target name="addDbutils" if="dbutilsLib">
+        <jar jarfile="dist/${webappName}.war" update="true">
+            <zipfileset dir="${dbutilsLib}" includes="Dbutils.jar" prefix="WEB-INF/lib"/>
+            </jar>
+        </target>
+
+    <target name="addGwen" if="gwenLib">
+        <jar jarfile="dist/${webappName}.war" update="true">
+            <zipfileset dir="${gwenLib}" includes="gwen.jar" prefix="WEB-INF/lib"/>
+            </jar>
+        </target>
+
+    <target name="deploy" depends="war">
+        <fail unless="serverPath" message="You need to specify a serverPath in the build.properties file"/>
+        <copy todir="${serverPath}/webapps">
+            <fileset dir="dist" includes="*.war"/>
+            </copy>
+        </target>
+
+    <target name="test" depends="init,compileSRW" description="Try running it.">
+        <java classname="com.foo.Main" fork="true" failonerror="true">
+            <classpath>
+                <pathelement location="."/>
+                </classpath>
+            <!-- Pass some args, perhaps: -->
+            <arg value="-myfile"/>
+            <!-- Will be given as an absolute path: -->
+            <arg file="myfile.txt"/>
+            </java>
+        </target>
+
+    <target name="sourcejar" depends="init">
+        <jar jarfile="dist/SRWSource.jar">
+            <zipfileset dir="src" includes="**/*.java" prefix="src"/>
+            </jar>
+        </target>
+
+    <target name="javadoc" depends="init" description="Javadoc for my API.">
+        <mkdir dir="apidoc"/>
+        <javadoc packagenames="ORG.oclc.os.SRW.*" destdir="apidoc">
+            <sourcepath>
+                <pathelement location="src"/>
+                </sourcepath>
+            </javadoc>
+        </target>
+
+    </project>
