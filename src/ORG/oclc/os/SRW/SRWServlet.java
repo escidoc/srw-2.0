@@ -1306,10 +1306,9 @@ public class SRWServlet extends AxisServlet {
                 String soapResponse=respMsg.getSOAPPartAsString();
                 int start=soapResponse.indexOf("<searchRetrieveResponse");
                 if(start>=0) {
-                    //MIH: do not cleanup! Do not remove xsi: Strings!
-                    //int stop=soapResponse.indexOf("</searchRetrieveResponse>");
-                    //soapResponse=cleanup(soapResponse.substring(start, stop+25)
-                    //    .toCharArray());
+                    int stop=soapResponse.indexOf("</searchRetrieveResponse>");
+                    soapResponse=cleanup(soapResponse.substring(start, stop+25)
+                        .toCharArray());                    
                     SRWDatabase db=(SRWDatabase)msgContext.getProperty("db");
                     //srwInfo.writeXmlHeader(writer, msgContext, req,
                     //    db.searchStyleSheet);
@@ -1407,10 +1406,9 @@ public class SRWServlet extends AxisServlet {
                 String soapResponse=respMsg.getSOAPPartAsString();
                 int start=soapResponse.indexOf("<scanResponse");
                 if(start>=0) {
-                    //MIH: do not cleanup! Do not remove xsi: Strings!
-                    //int stop=soapResponse.indexOf("</scanResponse>");
-                    //soapResponse=cleanup(soapResponse.substring(start, stop+15)
-                    //    .toCharArray());
+                    int stop=soapResponse.indexOf("</scanResponse>");
+                    soapResponse=cleanup(soapResponse.substring(start, stop+15)
+                        .toCharArray());
                     SRWDatabase db=(SRWDatabase)msgContext.getProperty("db");
                     srwInfo.writeXmlHeader(writer, msgContext, req,
                         db.scanStyleSheet);
@@ -1434,24 +1432,12 @@ public class SRWServlet extends AxisServlet {
 
     private String cleanup(char[] buf) {
         int i, j, len=buf.length;
-        boolean cdataSect = false;
         //len=0;
         for(i=0; i<len; i++) {
-            if (buf[i]=='!' && len-i>8) {
-                if(buf[i+1]=='[' && buf[i+2]=='C' && buf[i+3]=='D' &&
-                    buf[i+4]=='A' && buf[i+5]=='T' &&
-                    buf[i+6]=='A' && buf[i+7]=='[') {
-                    cdataSect = true;
-                }
-            }
-            if (buf[i]==']' && len-i>3) {
-                if(buf[i+1]==']') {
-                    cdataSect = false;
-                }
-            }
-            if(buf[i]==' ' && len-i>5 && !cdataSect) // might be " xsi:"
+            if(buf[i]==' ' && len-i>9) // might be " xsi:type"
                 if(buf[i+1]=='x' && buf[i+2]=='s' && buf[i+3]=='i' &&
-                  buf[i+4]==':') {
+                  buf[i+4]==':' && buf[i+5]=='t' && buf[i+6]=='y' &&
+                  buf[i+7]=='p' && buf[i+8]=='e') {
                     boolean foundQuote=false;
                     for(j=i+5; j<len; j++)
                         if(buf[j]=='"')
