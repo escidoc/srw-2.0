@@ -1,0 +1,115 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0054)http://pubserv.oclc.org/srw/PearsSRWConfiguration.html -->
+<HTML><HEAD><TITLE>Pears/Newton Configuration Instructions for the OCLC Research SRW Server</TITLE>
+<META http-equiv=Content-Type content="text/html; charset=utf-8">
+<META content="MSHTML 6.00.2900.2802" name=GENERATOR></HEAD>
+<BODY>
+<H1>Pears/Newton Configuration Instructions for the OCLC Research SRW 
+Server</H1>When the SRW server starts, it is passed a single startup parameter 
+(PropertiesFile) from the web.xml file. This points to a configuration file for 
+the SRW server. That configuration file in turn points to a separate 
+configuration file for each database hosted by the server. (See <A 
+href="http://pubserv.oclc.org/srw/Installation.html">Installation.html</A> for 
+more information on the SRW Server Properties file.) This document describes the 
+contents of the configuration file for a Pears or Newton database. <BR><BR>The 
+purpose of the database configuration file is to provide mappings from CQL index 
+names to database indexes and to provide mappings from the database's internal 
+record structure to specific XML schemas. It also provides configuration 
+information for the underlying database searching software. In this case, that 
+software is OCLC Research's Gwen search engine. <BR><BR>
+<H2>Gwen Configuration</H2>Your configuration file needs two mandatory lines: 
+<UL><B>Gwen.implementation=ORG.oclc.os.pearsgwen.pDatabase<BR>Gwen.updateMode=READONLY 
+  </B></UL>Another mandatory parameter is <B>pearsgwen.inifileName</B>. It should 
+point at a ZBase database.ini file. See the Index Mappings section below for 
+more information about this file. An optional parameter is 
+<B>pearsgwen.defaultOperator</B>. It specifies the implicit operator between the 
+words in a quoted list of words. If omitted, the value defaults to OR. Legal 
+values are: 
+<UL><B>pearsgwen.defaultOperator=OR<BR>pearsgwen.defaultOperator=AND<BR>pearsgwen.defaultOperator=ANDNOT<BR>pearsgwen.defaultOperator=PROX 
+  </B></UL>
+<H2>Index Mappings</H2>Index mappings are kind of a pain right now. The problem 
+is that the Gwen search engine is designed to support Z39.50 queries. So, the 
+CQL queries that the SRW server gets are converted to Z39.50 queries and then 
+Gwen has a configuration file that maps the Z39.50 query term attributes to 
+Pears or Newton index numbers. <BR><BR>So, that means that you need two 
+configuration files. If you are a SiteSearch user, the Gwen database 
+configuration file is just the database.ini file that you've been using for 
+ZBase. Look <A 
+href="http://pubserv.oclc.org/srw/ZBaseGwenDatabaseConfiguration.html">here</A> 
+for information on how to configure Gwen for ZBase. If you don't need Z39.50 
+support or you aren't using SiteSearch, then you can get away with a much 
+simpler Gwen configuration file. Look <A 
+href="http://pubserv.oclc.org/srw/SimpleGwenDatabaseConfiguration.html">here</A> 
+for those instructions <BR><BR>The SRW database configuration file contains 
+information on how to map a CQL query to a Z39.50 query. It does this by 
+specifying how the various parts of a CQL query map to their Z39.50 equivalents. 
+Since the Boolean query parts are identical, the mapping really centers around 
+how a CQL query term gets mapped to a Z39.50 query term. That, in turn, really 
+centers around how the CQL index and relation specifications map to Z39.50 term 
+attributes. The discussion below assumes that you have a database that is 
+already Z39.50 accessible and you're just trying to figure out how to map CQL 
+queries to that database. <BR><BR>A CQL qery term might look something like 
+"title=dog". Somehow, that must get turned into the list of structure attributes 
+that a Z39.50 server expects to see in query. There are six attributes that the 
+Z39.50 server is expecting and the CQL parser that we use (the Open Source <A 
+href="http://zing.z3950.org/cql/java/">CQL-Java</A> Parser from Mike Taylor) 
+generates values for all of them. <BR><BR>
+<H3>Attribute 1: Use</H3>The Use attribute is derived from the index part of the 
+CQL query. In our example of "title=dog", the index is "title". You'll need to 
+look in your Z39.50 configuration file to determine the value of the Use 
+attribute to specify for that index. Typically, the value would be '4', if you 
+use Bib-1 attributes. <BR><BR>To specify this in the SRW database configuration 
+file, you would say:
+<UL><B>qualifier.title = 1=4</B></UL>This means that when a term qualifier 
+(index) of "title" is seen, then Z39.50 attribute 1 (Use) should be set to 4. 
+<BR><BR>You can specify other names for the index as well. <B>qualifier.dc.title 
+= 1=4</B>
+<UL></UL>You will need to do this for all the indexes specified in you Z39.50 
+configuration file. 
+<H3>Attributes 2-6: Relation, Position, Structure, Truncation and 
+Completeness</H3>Fortunately, these attributes are pretty static and can 
+probably be copied from almost any other SRW database configuration file. 
+<H2>Schema Mappings</H2>The native internal format is a Dublin Core record. If 
+the search request does not specify a <I>recordSchema</I>, then the record will 
+be returned in that Dublin Core schema. If the server is to support other 
+schemas (e.g. <A href="http://www.loc.gov/standards/marcxml/">MARC-XML</A>, <A 
+href="http://www.loc.gov/standards/mods/">MODS</A>, <A 
+href="http://www.editeur.org/">ONIX</A>), then a mapping to those schemas must 
+be provided. The mapping mechanism uses XSLT. <BR><BR>To enable schema support, 
+a list of the supported schemas must be provided in the database configuration 
+file. This list consists of a single line that begins <B>xmlSchemas=</B> and is 
+followed by a list of the schema ID's that are to be supported. The names 
+provided in the list are exactly the names that must be provided in the 
+recordSchema parameter of the searchRetrieve request. If a schema is to be known 
+by more than one ID then both ID's must be provided in the list. (e.g. Dublin 
+Core might be known both as http://www.loc.gov/zing/srw/dcschema/v1.0/ and as 
+DC.) An example of an xmlSchemas list would be: 
+<UL><B>xmlSchemas=http.//www.loc.gov/zing/srw/dcschema/v1.0/, dc, 
+  http.//www.loc.gov/marcxml, marcxml</B></UL><I>Note: due to a pecularity of java 
+properties files, you can't use colons. So, replace the colon with a period. I 
+promise that it will work correctly when the user specifies the schema ID using 
+a colon.</I> <BR><BR>In addition to the list, the location of an XSLT 
+transformation file must be provided for each schema. (Well, if no 
+transformation is necessary, (i.e., the requested schema is the default schema) 
+then no XSLT file is necessary.) A line should be provided that begins with the 
+schema ID, followed by an equals-sign and the name of the XSLT file. For 
+example: 
+<UL><B>marcxml=DcToMarcXml.xsl</B><BR><B>http.//www.loc.gov/marcxml=DcToMarcXml.xsl</B></UL>The 
+SRW server assumes that the XSL file specification is the complete pathname of 
+the file. If it isn't, then the server looks for that file, first in the db.home 
+directory and then in the SRW.Home directory. <BR><BR>At present, there are no 
+XSLT files for transforming DSpace Dublin Core records to other schemas. I'm 
+hoping that the community will make them available. If this happens, I will be 
+glad to incorporate them in this package and/or point at them from this 
+document. <BR><BR>
+<H2>Example SRW Database Configuration File</H2><A 
+href="http://pubserv.oclc.org/srw/GSAFD.SRWDatabase.props.html">SRWDatabase.props 
+file for the GSAFD Thesaurus</A> <BR><BR>
+<H2>Example ZBase Database.ini File</H2><A 
+href="http://pubserv.oclc.org/srw/GSAFD.ini.html">ZBase Database.ini file for 
+the GSAFD Thesaurus</A> <BR><BR>
+<H2>Contact Information</H2>Any questions, comments, suggestions or opinions 
+should be sent to <A href="mailto:levan@oclc.org">Ralph LeVan</A> (<A 
+href="http://www.oclc.org/research/staff/levan.htm">Ralph's Home Page</A>.) 
+<BR><A href="http://www.oclc.org/research">OCLC Research</A><BR><A 
+href="http://www.oclc.org/">OCLC</A> </BODY></HTML>

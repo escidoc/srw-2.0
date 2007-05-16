@@ -1,0 +1,321 @@
+/proj/scorpion/rrl/java/PearsBuilds/Pears-1.1.32/pears.jar:/proj/scorpion/rrl/4.2/classes
+Wed May 12 11:46:30 EDT 2004
+
+
+test1: Build a database with threading
+12c12
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+57c57
+< Number of regions in database:..................121
+---
+> Number of regions in database:..................123
+59c59
+< Total database size:............................1.98MB
+---
+> Total database size:............................2.02MB
+61c61
+< Number of index regions in database:............49
+---
+> Number of index regions in database:............51
+71c71
+< Total elapsed time: 16.72 seconds
+---
+> Total elapsed time: 15.22 seconds
+
+
+test2: Build an index-partitioned database with threading
+12c12
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+71c71
+< Total elapsed time: 14.64 seconds
+---
+> Total elapsed time: 18.18 seconds
+
+
+test3: Build a database with no threading
+11c11
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+70c70
+< Total elapsed time: 15.22 seconds
+---
+> Total elapsed time: 14.64 seconds
+
+
+test4: Add records to the database
+12c12
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+74c74
+< Total elapsed time: 06.73 seconds
+---
+> Total elapsed time: 07.46 seconds
+
+
+test5: Add records to the database, one at a time
+13c13
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+114c114
+< Total elapsed time: 09.19 seconds
+---
+> Total elapsed time: 08.86 seconds
+
+
+test6: Replace records in the database
+11c11
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+72c72
+< Total elapsed time: 05.67 seconds
+---
+> Total elapsed time: 06.01 seconds
+
+
+test7: Replace records in the database using threads
+12c12
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+73c73
+< Total elapsed time: 05.01 seconds
+---
+> Total elapsed time: 05.24 seconds
+
+
+test8: Replace records in the database one at a time
+12c12
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+112c112
+< Total elapsed time: 15.68 seconds
+---
+> Total elapsed time: 14.05 seconds
+
+
+test9: Remove records from the database
+11c11
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+72c72
+< Total elapsed time: 05.24 seconds
+---
+> Total elapsed time: 04.92 seconds
+
+
+test10: Remove records from the database, one at a time
+13c13
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+114c114
+< Total elapsed time: 13.28 seconds
+---
+> Total elapsed time: 12.04 seconds
+
+
+test11: Remove non-existant records from the database
+11c11
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+67c67
+< Total elapsed time: 03.25 seconds
+---
+> Total elapsed time: 03.26 seconds
+
+
+test12: Remove all the records from a database
+11c11
+< Pears Version: 1.1.26 - Thu Jan 31 11:08:34 EST 2002
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+70c70
+< Total elapsed time: 02.97 seconds
+---
+> Total elapsed time: 04.59 seconds
+81c81
+< Pears Version: 1.1.26 - Thu Jan 31 11:08:34 EST 2002
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+109c109
+< 10 regions gotten from cache
+---
+> 8 regions gotten from cache
+142c142
+< Total elapsed time: 02.96 seconds
+---
+> Total elapsed time: 04.90 seconds
+
+
+test13: Run DbDemo verifying that basic searching still works
+/proj/scorpion/rrl/java/PearsBuilds/Pears-1.1.32/pears.jar:/proj/scorpion/rrl/4.2/classes
+
+
+test14: Run Classifier verifying that ranked retrieval still works
+
+
+test15: Add a single record with lots of threads to the database
+13c13
+< Pears Version: 1.1.26 - Thu Jan 31 11:08:34 EST 2002
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+75c75
+< Total elapsed time: 03.39 seconds
+---
+> Total elapsed time: 04.54 seconds
+
+
+test16: Add four records using an embedded Bartlett
+
+
+test17: Replace those four records using an embedded Bartlett and a transaction journal
+4,5c4,5
+< Committing 6 journal regions to the database
+< 5 regions gotten from cache
+---
+> Committing 7 journal regions to the database
+> 6 regions gotten from cache
+9,10c9,10
+< Committing 6 journal regions to the database
+< 5 regions gotten from cache
+---
+> Committing 7 journal regions to the database
+> 6 regions gotten from cache
+14,15c14,15
+< Committing 6 journal regions to the database
+< 5 regions gotten from cache
+---
+> Committing 7 journal regions to the database
+> 6 regions gotten from cache
+19,20c19,20
+< Committing 6 journal regions to the database
+< 5 regions gotten from cache
+---
+> Committing 7 journal regions to the database
+> 6 regions gotten from cache
+
+
+test18: Run DbDemo verifying that relative record number fetches still work
+
+
+test19: Verify the BER to USMARC to BER routines
+
+
+test20: Verify the USMARC record handler likes OCLCMARC records
+
+
+test21: Verify the MARC record handler doesn't like OCLCMARC records
+
+
+test22: Build a GeorefMarc database
+This test was removed from the regression suite
+
+
+test23: Test Diacritics handling in DataDir and Util
+
+
+test24: Build a record-partitioned database
+10c10
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+20c20
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+30c30
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+40c40
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+228c228
+< Total elapsed time: 16.87 seconds
+---
+> Total elapsed time: 16.85 seconds
+
+
+test25: Update a record-partitioned database
+11c11
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+21c21
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+31c31
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+41c41
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+236c236
+< Total elapsed time: 17.39 seconds
+---
+> Total elapsed time: 18.05 seconds
+
+
+test26: Remove record from a record-partitioned database
+9c9
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+19c19
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+29c29
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+39c39
+< Pears Version: 1.1.31 - Mon Apr 26 14:23:21 EDT 2004
+---
+> Pears Version: 1.1.32 - Wed May 12 11:46:11 EDT 2004
+233c233
+< Total elapsed time: 06.95 seconds
+---
+> Total elapsed time: 07.29 seconds
+
+
+test27: Run the BTreeDictionary unit test
+
+
+test28: Test the Delimited Text RecordHandler
+
+
+test29: Test the SGML RecordHandler
+
+
+test30: Test the PDB RecordHandler
+
+
+test31: Test the FilterByPartitionNumber record filter
+
+
+test32: Run the JUnit test for HandleUSMARC
+
+
+test33: Run the JUnit test for CharToByteUSM94
+
+
+test34: Run the JUnit test for ByteToCharUSM94
+
+
+All tests passed

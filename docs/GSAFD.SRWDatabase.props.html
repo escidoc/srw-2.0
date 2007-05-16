@@ -1,0 +1,102 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0056)http://pubserv.oclc.org/srw/GSAFD.SRWDatabase.props.html -->
+<HTML><HEAD><TITLE>SRWDatabase.props for the GSAFD Thesaurus</TITLE>
+<META http-equiv=Content-Type content="text/html; charset=utf-8">
+<META content="MSHTML 6.00.2900.2802" name=GENERATOR></HEAD>
+<BODY><PRE>Gwen.implementation=ORG.oclc.os.pearsgwen.pDatabase
+Gwen.updateMode=READONLY
+pearsgwen.defaultOperator=OR
+pearsgwen.inifileName=GSAFDZthes.ini
+
+xmlSchemas=ZThes, DC, http.//www.loc.gov/zing/srw/dcschema/v1.0/
+ZThes=none
+DC=genericLomToDC.xsl
+http.//www.loc.gov/zing/srw/dcschema/v1.0/=genericLomToDC.xsl
+explainRecord=Explain.xml
+
+# Propeties file to drive org.z3950.zing.cql.CQLNode's toPQF()
+# back-end.  This specifies the interpretation of various CQL
+# qualifiers, relations, etc. in terms of Type-1 query attributes.
+#
+# See http://www.loc.gov/z3950/agency/zing/cql/dc-indexes.html
+# for the Maintenance Agency's work-in-progress mapping of Dublic Core
+# qualifiers to Attribute Architecture (util, XD and BIB-2)
+# attributes.
+
+
+# ZThes access points
+qualifier.any                           = 1=1
+qualifier.zthes.termID                  = 1=2
+qualifier.zthes.termName                = 1=3
+qualifier.zthes.termQualifier           = 1=4
+qualifier.zthes.termNotes               = 1=5
+
+# The default access point and result-set references
+qualifier.srw.serverChoice              = 1=1
+        # "any"
+
+### This needs special support in the renderer
+qualifier.srw.resultSet                 = @set
+qualifier.srw.resultSetName             = @set
+qualifier.srw.resultSetId               = @set
+qualifier.srw.resultSetID               = @set
+
+# Relation attributes are selected according to the CQL relation by
+# looking up the "relation.<RELATION>" property:
+#
+relation.&lt;                              = 2=1
+relation.le                             = 2=2
+relation.eq                             = 2=3
+relation.exact                          = 2=3
+relation.ge                             = 2=4
+relation.&gt;                              = 2=5
+relation.&lt;&gt;                             = 2=6
+
+### These two are not really right:
+relation.all                            = 2=3
+relation.any                            = 2=3
+
+# BIB-1 doesn't have a server choice relation, so we just make the
+# choice here, and use equality (which is clearly correct).
+relation.scr                            = 2=3
+
+# Relation modifiers.
+#
+relationModifier.relevant               = 2=102
+relationModifier.fuzzy                  = 2=100
+        ### 100 is "phonetic", which is not quite the same thing
+relationModifier.stem                   = 2=101
+relationModifier.phonetic               = 2=100
+
+# Position attributes may be specified for anchored terms (those
+# beginning with "^", which is stripped) and unanchored (those not
+# beginning with "^").  This may change when we get a BIB-1 truncation
+# attribute that says "do what CQL does".
+#
+position.first                          = 3=1
+        # "first in field"
+position.any                            = 3=3
+        # "any position in field"
+position.last                           = 3=4
+        # not a standard BIB-1 attribute
+position.firstAndLast                   = 6=3
+        # search term is anchored to be complete field
+
+# Structure attributes may be specified for individual relations; a
+# default structure attribute my be specified by the pseudo-relation
+# "*", to be used whenever a relation not listed here occurs.
+#
+structure.exact                         = 4=1
+        # phrase
+structure.all                           = 4=2
+structure.any                           = 4=2
+structure.*                             = 4=7
+        # AdjWordList
+
+# Finally, any additional attributes that should always be included
+# with each term can be specified in the "always" property.
+#
+always                                  = 5=104 6=1
+# 5=104: some kind of vaguely CQL-like masking, IIRC.
+# 6=1: completeness = incomplete subfield
+</PRE>y</BODY></HTML>

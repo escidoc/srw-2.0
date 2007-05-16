@@ -1,0 +1,1242 @@
+Pears version file.  This file records major changes to the Pears
+software.  Note that periodically we will have to branch the software
+for CORC since they won't want all the changes we're working on at any
+given time.  These branches will be denoted by an extra dot (e.g.,
+0.1.1).  It's assumed that major Pears releases will be used by CORC
+once they are stable.
+
+05-12-2004  1.1.32 Final
+Bug Fixes
+= Handles LT, LE, GE and GT searches using Gwen search engine (the old
+   NewtonLite engine took care of this for us.)
+= USMARC 008 language field should not be n/a.
+
+Enhancements
+= Added NACO normalization to Phrase and all its descendents
+= Created a RecordNormalizer that makes XML records out of the extracted terms
+   for passing to database engines with poor indexing (like Oracle or FAST.)
+= Created a new indexing routine that provides a dateModified index (Jeff
+   Young's OAICAT server uses that index.)
+
+- HandleUSMARC changes the 008 language code from n/a to three blanks.
+- Created HandleUSMARCTest for JUnit testing
+- pears.java had code added to support a relation other than equals.
+- pearsTerm got a method to let it back up from the first term in one index to
+   the last term in the previous index.
+- Phrase got NACO normalization added (nacoNormalize=true in the dbdesc.ini.)
+- Phrase and Words can be passed a LinkedList to hold the extracted terms
+   for the RecordNormalizer. (dontDeduplicate=true in the dbdesc.ini.)
+- IndexRoutines, StopwordEnforcer, BerInteger, Bartlett.termlist and
+   SmartReplacement.Classifier had minor changes to support footprint changes
+   in IndexRoutines.
+- IndexRoutines.DatabaseAddDate created.  It returns the current date in the
+   form yyyy-MM-dd.
+- IndexingRules saves the names of the indexes in a Hashtable for the
+   RecordNormalizer
+- IndexRoutine.Index() had its footprint changed to support the
+   RecordNormalizer
+- RecordIndexer passes LinkedLists to the Index() method for the
+   RecordNormalizer
+- RecordHandler.RecordNormalizer class created to create XML records from
+   the terms extracted from a document.
+
+04-26-2004  1.1.31 Final
+Bug Fixes:
+= DataDirTrees were leaking
+= Caught a NullPointerException for the data in a nip
+
+Enhancements:
+= Created a new class, DataDirSource, that converts BER to XML.  It can be
+   used as a Source for XSL transformations.
+= The main() method in RecordHandler can use XSLT stylesheets to make XML
+   records from any supported input format.
+= The LocalCharConverters and LocalByteConverters were rewritten to adhere
+   to the pattern set by the java.io.ByteToCharConverters and
+   java.io.CharToByteConverters.  Added junit tests for them as well.
+= util/BDAMfile can used memory mapped files
+= util/IndexLoop can keep track of the n longest terms in an index
+= util/Region can now write longs as VInts
+= Sped up indexing code.  Used to make lots of Strings, now pass pointer into
+   char array.  Data routines used to allocate byte arrays to hold their
+   products, now they fill a buffer owned by the extracted term.
+
+- DataDir.getString() didn't cope well with a cached char array.
+- HandleMARC and USMARC needed changes to support the new character converters.
+- LocalCharConverter/EaccTables had several characters wrong.
+- CharToByteUSM94Test added a test for a single diacritic as input.
+- CharToByteUSM94 wasn't handling the error case of a single diacritic as
+   input correctly.
+- LocalByteConverter, provided a default value for SubChars of '?'.
+- ByteToCharUSM94Test added a test for when SubChars haven't been defined.
+- ByteToCharUSM94 wasn't using one of the EACC tables.
+- HandleSGML was adding tags to the .tags file for fields that it had been
+   told to ignore.
+- HandleUSMARC changed because of DataDir.getUTFChars() change.
+- IndexingRules uses java.util.Array instead of our private version
+- LoadedRules doesn't worry about index abbreviations any more.
+- MappedPostingsList copes better with bad delete nips
+- The Phrase, Words and WordsMinusBoundPhrases indexing routines were catching
+   an ArrayOutOfBoundsException instead of just checking array length
+- The YearRange indexing routine was accidently resetting the mustContain
+   parameter.
+- pearsProx.compare() was returning 1 when it should return -1 when equal.
+- Bartlett and Bosc were eliminating redundant nips incorrectly
+- Exposed UnicodeDecomposition.decompose().
+- LocalCharConverter.Uni2LatinTable no longer returns a fill character when
+   receiving the Unicode unknown character \ufffd.
+- LocalCharConverter.EaccTables had a bad character
+- LocalByteConverter.EaccTables had a bad character
+- DataDir.getUTFChars() allocates a new char[] every time.
+- HandleUSMARC will create an 066 field when making a MARC-21 record from
+   a Unicode record (which shouldn't have an 066.)
+- RecordHandler/UnicodeMarcConverter added.  It is a trivial variant on the
+   main() method of RecordHandler, written for the BatchLoad folks.  It reads
+   a stream of MARC records and converts the Unicode records to MARC-8.  All
+   of the records, whether converted or not, are written to the output file.
+- Phrase, when using the isSubfield list, was only using the first instance
+   of the subfield.  The joinFieldsWith variable was being stomped on if not
+   provided in the database description.
+- CharToByteUSM94 was completely rewritten.
+- ByteToCharUSM94: the Zero-Width Non-Joiner was incorrectly entered in LC's
+   tables at \u200E when it should have been \u200C.
+- BufferedBerStream.main() added to dump ber records.
+- DataDir.toString() doesn't dump siblings of current node.
+- DataDir.addUTF() doesn't convert Strings and char arrays to UTF8 byte
+   arrays.  That conversion is deferred to record build time, in case the
+   node is thrown away or the record is never built.
+- DataDirTree was not recovering all its nodes.
+- Bartlett defers creating the BerString version of the record until needed.
+- util/BDAMfile can used memory mapped files
+- util/BTreeDictionary creates a database if pointed at one that doesn't exist.
+- util/Buffer defers allocating its Pointer pool until it is needed.
+- util/DataRoutine: data routines (like Bartlett/wordfield) ares now passed a
+   byte array instead of making their own.
+- util/ExtractedTerm has its Strings replaced with Pointers.  DataRoutines are
+   now passed a byte array instead of making their own.
+- util/IndexingRules keeps stopwords as Pointers instead of Strings
+- util/IndexLoop can keep track of the n longest terms in an index
+- util/Pointer is prepared to be used as an alternative to a String.
+- util/Pool cleaned while looking for leaks and prepared to turn off pooling.
+- util/PostingsListFragment copes a little better with nips that are too big
+   to fit into a region. (Too much prox data from book indexes.)
+- util/Region can now write longs as VInts
+- util/RemoveFieldRecordModifier wasn't freeing DataDirTree nodes.
+- util/Term uses a char[] instead of a String.
+- IndexRoutines YearRange, Words, TokenizerWords, SimplePatterns, Phrase,
+   BerInteger now use pointers into char arrays instead of Strings.
+   DataRoutines now fill a byte array passed to them instead of making their
+   own.
+- Nip had a finalize() method that was cleaning up something that was being
+   reused.  Removed the finalize() method.
+
+
+03-21-2003  1.1.30 Final
+Bug Fixes:
+= CORC was seeing a nullPointerException in Cache.findFreeRegion().
+= When ByteToCharUSM94 detected an illegal diacritic at the end of a field,
+   it threw away the diacritic but forgot to shorten the length of the field.
+= Database descriptions that specified a recordIDIndex but didn't define that
+   index were not recognized as being bad.
+= ByteToCharUSM94, ByteToCharOclcAscii and TableUsMarcToUnicode: corrected bad
+   Ayn mapping
+= ByteToCharUSM94 rebuilt with new EACC to Unicode tables.
+= HandleSGML was using hard-coded values to test for the presence of attributes
+   in a DataDir.
+= HandleDelimited wasn't happy finding tags in the first record.
+= IndexLoop leaked like a sieve.
+= HandleSGML was confused when asked about its percent done.
+= Replacing a database description caused us to allocate and then free a
+   single buffer in the FragmentFile cache.  We didn't cope well with having
+   an empty cache.
+
+Enhancements:
+= HandleDirectory created for Lucene evaluation.  Reads all the files in a
+   directory and its subdirectories.
+= HandleUSMARC can now make Unicode records.
+= RecordHandler can now take a list of input files via multiple -i parms.
+= Ripped database locking out of Bartlett.
+= MARC record handlers cope with blanks and nulls in digit fields.
+= Records can be modified after being indexed but before being stored.
+= HandleSGML got a new .ini parm (createXMLTags) which requires the presence
+   of an empty .tags file but creates prettier output than the default
+   trivial XML.
+= HandleSGML converts unsafe characters to entities when generating SGML.
+= HandleSGML can generate "delete" records.
+= Updated the LCCardNumber indexing routine to support the new format.
+= Added the Chinese indexing routine (TokenizerWords using IdeographTokenizer).
+= Created a new RecordFilter, FilterByPartitionNumber.  This required changed
+   to the RecordFilter and RecordHandler interfaces.
+= Some attempts to reduce the memory usage of Bartlett.
+= File opening (including gzip support) and common .ini parameters for record
+   handlers pushed down into the base RecordHandler class.  Added the
+   rootNodeFldid parameter.
+= Added some .tags file validation to HandleSGML.
+= HandleSGML was always htmlEncoding the output from fromDataDir().  That's
+   optional now through an htmlEncode parameter.
+
+- Region and Region0 had a bunch of method names with initial caps.
+   The getVInt methods now also return the length of the VInt.  A bunch of
+   classes got touched as a result of this change.
+- HandleMARC changed as a result of DataDirTree changes.
+- DataDirTree had a leak.
+- Exposed HandleDelimited's subTokenizer.
+- Added a diagnostic dump to HandleSGML when trying to make SGML and
+   encountering and unrecognized tag in the DataDir.
+- RecordHandler recognizes that it loaded the UTF-8 char converter and sets
+   a flag (makingUnicode).
+- HandleUSMARC overrides HandleMARC's fromDataDir() method and, if
+   makingUnicode is true, strips the 066 fields from the record and sets
+   leader byte 9 to 'a'.
+- HandleMARC can produce Unicode records.
+- Fixed bug in Bartlett when reindexing database with accession number indexes
+- Fixed bug in Cache.removeBuffer().  CORC was seeing a nullPointerException
+   in Cache.findFreeRegion().  This was caused by removeBuffer dropping the
+   cache size to zero, which isn't supported.  removeBuffer() now ignores the
+   request to remove the last buffer.
+- Changed the default number of records to process in Bartlett and
+   RecordHandler from 9M to 99M.
+- RecordHandler accepts a -ft parm signalling that it is running as part of a
+   regression test and should suppress some of its messages.
+- ByteToCharUSM94 detected an illegal diacritic at the end of a field and
+   threw away the diacritic but forgot to shorten the length of the field.
+- Added some debuggery to Cache to catch an error condition.
+- HandleMARC.bytesToInt() method assumes that blanks and nulls are equivalent
+   to zeros
+- Bartlett uses a recordModifier specified in the database description to
+   change records just before storing them.
+- RecordHandler.main: Added support for a RecordModifier specification in a
+   database description.
+- DBDesc finds a RecordModifierClass specification in the [DB] section of the
+   database description.
+- Created a RecordModifier class.
+- Created a MissingParameterException class.
+- MappedPostingsList.add() returns an error flag if a non-fatal error occurs.
+- DBDesc checks that if a recordIDIndex has been specified that it has also
+   been defined.
+- In IndexingRules, added a public method isAnIndex(int index).
+- In IndexingRules, renamed the public variable TagPathTree to tagpathTree.
+   This effected RecordIndexer
+- ByteToCharUSM94, ByteToCharOclcAscii ant TableUsMarcToUnicode were
+   incorrectly mapping the Ayn character to \u02bf based on early MARBI
+   documents.  The correct value is \u02bb.
+- ByteToCharUSM94 rebuilt with new EACC to Unicode tables.
+- HandleSGML had two lines with hard-coded tests for fldid==2 instead of
+   fldid==AttrFlag
+- HandleSGML: added an encode() method to convert '<' and '&' to entities.
+- Bosc: cleaned up some error handling dumps.
+- MappedPostingsList.add() and PostingsListFragment.add() return a boolean
+   true when it thinks that a minor error has occurred that might want to
+   cause the caller to dump some state info.
+- Region throws an exception when asked to make a VInt from a negative number.
+   (Used to quietly return zero.)
+- Added some debuggery to Phrase.
+- FilterTransactionJournal had some debuggery added when handling malformed
+   records.
+- HandleDelimited sets shouldLoadTags=false and addNewTags=true when
+   firstRecordHasTags=true.
+- HandleSGML has a new property, shouldLoadTags, which can be overridden by
+   classes that have their own way to load tag information.
+- In HandleUSMARC the creation of the local byte and char converters was
+   moved from the Input() methods to the constructor.  The Input() methods
+   were removed and revert back to the base RecordHandler class.
+- IndexLoop used to depend on MappedPostingsList to free a Pointer.  It frees
+   the Pointer itself now.
+- HandleSGML had a local copy of fileLength which inadvertently overrode the
+   one in the base RecordHandler class.
+- HandleSGML can generate "delete" records.  Delete's are signalled by the
+   presence of an attribute on the record tag.  The attribute is defined by
+   adding the value "DeleteFlag" to the attribute's definition in the .tags
+   file.
+- LCCardNumber will handle LCCN's of the format ppyyyynnnnnnjjjj... where
+   p's are prefix letters, y's are the year, n's are a serial number and j's
+   are junk.
+- Added a new IndexRoutines class which uses a tokenizer to parse fields.
+- Added new util class IdeographTokenizer which extends FastStringTokenizer,
+   returning single CJK ideographs.
+- Made FastStringTokenizer extendable by removing the 'final' attribute from
+   some methods and making some variables protected instead of private.
+- Pool.empty() added to empty a pool.
+- Buffer, added a static method to empty the pointer pool.
+- Bartlett.close(), Buffers get their Pointer pool cleaned up.
+- PartitionByNumericFieldValue can get numPartitions from the .ini file
+   instead of just from counting the number of databases.
+- Created FilterByPartitionNumber which embeds a record partitioner to
+   select records from the input stream.
+- HandleUSMARC, HandleTransactionJournal, HandleSGML, HandlePica, HandlePDB,
+   HandleMARC, HandleDelimited, HandleChinaMarc, HandleBER readIniFile() can
+   now throw a MissingParameterException.
+- RecordHandler prepared for the RecordFilter.init() method to throw a
+   MissingParameterException.  Changes the interface to readIniFile();
+- DataDirFilter.init() can now throw a MissingParameterException.
+   isKeeper() can now throw a MalformedRecordException.
+- RecordFilter.ini() can now throw a MissingParameterException.
+- Cache.removeBuffer didn't recognize that the cache had been emptied.
+- FastStringTokenizer was throwing and catching unnecessary
+   ArrayIndexOutOfBoundsExceptions.
+- MappedPostingsList: The number of fragments preallocated is set to 10
+  (instead of 500) and grows by 20 (instead of doubling).
+- Pool only uses its checkedOut Hashtable if paranoid is turned on.
+- HandleMARC, HandleUSMARC, HandleChinaMarc: added a constructor to set the
+   handlerName.
+- HandleMARC.toString() infers the recordType from the handlerName.
+- HandleMARC, HandleUSMARC, HandleChinaMarc, HandleUnimarc, HandleBER,
+   HandleTransactionJournal, HandlePica, HandlePDB, HandleSGML,
+   HandleDelimited: Pulled redundant .ini file processing and input file
+   handling code.
+- Rewrote the HandleDelimited file reader to support streams without the
+   mark() method.
+
+03-06-2002  1.1.29 Final
+Bug Fixes:
+= Bartlett wasn't able to build empty databases for SiteSearch
+
+Enhancements:
+= HandleDelimited will accept a rootNodeFldid parameter in it's configuration
+   file.  If you set rootNodeFldid=9, you've generated a replace record for
+   Newton.  (Which is how it is being used at one site.)
+
+- BTreeDictionary.get() forgot to check if getTerm(key) returned null.
+- HandleDelimited set the fieldID of the root node of the BER records that
+   it produces to roodNodeFldid.
+- RecordHandler has a readIniFile method that looks for rootNodeFldid.
+- Bartlett.saveDBDesc() needed to set didSomething to true to force commits
+   of all the component files.
+
+03-01-2002  1.1.28 Final
+Bug Fixes:
+= Cache was handing out old copies of freed empty regions.
+
+Enhancements:
+= BTreeDictionary now provides access to all the features of a Pears index.
+
+- Cache.read() is more patient before reporting that it had to wait on a read.
+- Cache.write(), when freeing an empty buffer, needed to call removeBuffer
+   earlier.
+- FragmentFile.replaceFragmentInBuffer can let the only fragment in a buffer
+   grow easily.
+- FragmentHeader, added a setFragLen method that accepts an int.
+- MappedPostingsList.writeCurrentFragment better able to write fragments
+   that have grown back into the same buffer.
+- IndexNode sped up slightly by avoiding an unnecessary pointer creation.
+- MappedPostingsList keeps better track of pointers that were given to it
+   and pointers that it got itself and only frees its own pointers.
+- Pool was rewritten to use a Hashtable instead of a Vector of checked out
+   objects.  Added a little paranoia and some debuggery.
+- Sped up the HedrFile.ReadByteRecord() method by avoiding an unnecessary
+   extra read when reading records contained in a single region.
+- MappedPostingsList, continue to enhance the regression test.  Found some
+   minor bugs as a result.
+- PostingsListFragment doesn't throw an exception when adding a recordID to
+   a postings list that already has that recordID.  Instead, it deletes the
+   old version and continues to add the new version.
+- PostingsListFragment, fixed a bug where we were freeing something that
+   didn't belong to us.
+- PostingsListFragment and Term, added borrower to their toString() output.
+- MappedPostingsList, added the first cut at a good regression test.  It
+   uncovered the Cache bug.
+- BTreeDictionary keys can now have indexID's and postings counts.  Term
+   objects can be returned instead of only the original value associated with
+   the key.  Whether the values get serialized and deserialized can be turned
+   off through the setSerializeData() method.
+- In Cache, created an internal method to remove buffers from memory.  Added
+   some debuggery.
+- In DBReporter, added a constructor that accepts a FileSet.  Cleaned up its
+   toString() and report() methods.
+- Pointer.reset() from another pointer assumed that the other pointer pointed
+   at character data, not byte data
+- FreespaceManager wasn't managing its cached buffers correctly.
+
+02-13-2002  1.1.27 Final
+Bug Fixes:
+= Validate was reporting a recordID that pointed at an Index region for CORC.
+= The count of Data Regions in the Bartlett and validate reports was wrong
+   for CORC.  We weren't decrementing the counts when returning empty regions
+   to the FreespaceManager for reuse.
+
+Enhancements:
+= In Bartlett, validate and MergeOldJournal, database names can be specified
+   with or without the .pdb suffix.
+
+- IndxFile and IndexNode dump a little more information when exceptions are
+   thrown.
+- Bartlett and validate strip the .pdb off of database names.
+- MergeOldJournal adds a missing .pdb to the filename.
+- MappedPostingsList wasn't freeing the fragment ID when a postings list got
+   small enough to move back into the index.  Minor improvements to the unit
+   test.
+- IndxFile had a problem using indexes without a database description
+   (this happens in the MappedPostingsList unit test.)
+- IdirFile's main method will now look up recordID's.
+- In BufferableObject, added setType() and isEmpty() to the interface.
+- In MarcLeader, there was an error in the boiler plate when producing
+   MARC records.
+- In Cache, found another place where we were handing out empty regions that
+   weren't really available.
+- In Buffer, added an isEmpty() method.
+- The Cache() object was made private in FragmentFile so that FragmentFile
+   could decrement the count of fragment regions when writing an empty
+   region (which the FreespaceManager will then reuse.)  PostFile,
+   MappedPostingsList, HedrFile, FragmentFile and FileSet classes were all
+   changed.
+- Bartlett will accept multiple input files (multiple -i parms)
+- HandleSGML will read gzipped input files when "gzipped=true" is specified
+   in the [HandleSGML] section of the database description.
+
+02-01-2002  1.1.26 Final
+Bug Fixes:
+= We generated a stack overflow when a change to the postings info for the
+   last term in a region caused a node split.
+= There was a lack of communication between the cache manager and the
+   freespace manager and the cache manager occasionally gave out a region
+   that the freespace manager didn't want going out
+= We were doing gratutious commits when shutting down and have stopped that.
+
+Enhancements:
+= Bartlett has a "paranoid" mode that forces it to run validate between the
+   successful end of an update and the commit of the changes.  This should
+   prevent a bad database from ever going into production.  Clearly a good
+   thing for large batch updates but probably unacceptable in online mode.
+
+- Bartlett has a new -fp (run paranoid) parm that forces a call to
+   validate(-all) before committing the database journal.
+- MergeOldJournal wasn't a public class.
+- validate can be called with an already open FileSet.  Added a
+   getReturnCode() accessor method.
+- Removed Bartlett's -r<recsPerCommit> parm.
+- Bartlett doesn't do a commit if no records or processing commands have
+   have been done.
+- FreespaceFile doesn't do a commit if the freespace manager hasn't done
+   anything.
+- In BDAMfile, when reading from an old journal, we were missing the last
+   region in the journal.
+- In IndxFile, the "looking right 2" messages (and dumps) are now
+   "looking right 3".  (Looking right 2 is normal and common.)
+- BDAMfile.write() is prepared to find a lingering buffer in the journal
+   hashtable.  Journals can be opened with an explicit blocksize (works
+   around a bug that results in a journal with no region zero; to be fixed
+   soon)
+- Cache.FindFreeRegion() verifies with the FreespaceFile that an apparently
+   free region is actually free.
+- Added a hasFreebytes() method to FreespaceManager and FreespaceFile that
+   allows the Cache manager to verify that a region that it has is still
+   available.
+- IndxFile.ReplaceTerm() will now handle the need for a node split rather
+   than just deleteing the term and calling AddTerm.  (Bug was that deleteing
+   a term does not always delete it, if it was the last term in the node,
+   then its postings got set to zero.  So AddTerm just called ReplaceTerm who
+   deleted and called AddTerm...)
+- validate now has a -fj parameter that tells it to use the database journal
+   as part of the database.
+- FileSet has a new constructor that tells it to use the database journal too.
+- In HandleSGML, we get the file length when started with a file name and
+   added a percentDone() method
+- IndxFile wasn't decrementing the index region count when freeing empty
+   index nodes.
+
+01-17-2002  1.1.25 Final
+- RebuildSalvagedBTD deserializes the objects gotten from the "terms" input
+   file before adding them back to the database.
+- Bosc and BTreeDictionary had to change the footprint to
+   IndxFile.RemoveTerm().
+- IndxFile.RemoveTerm() completely rewritten to allow empty nodes to go away.
+- FreespaceManager reacquires the write lock on the MFR and FR after doing
+   a commit.
+- UpdateBTreeDictionaryFromJournal takes explicit arguments now
+   (dbname -j<journalname> [-ft]) and -ft puts a serious load on the
+   updater while updating.
+- FreespaceManager.setFreebytes has some debuggery added when switching
+   freespace regions.
+- ExtractIndexTerms reports on leaf data in non-leaf nodes.  Counts leaf
+   data terms and invisible terms.
+- Cache provided more info dumped when refusing to write a region that is
+   not locked.
+- In BTreeDictionary, found a leak in get() when looking for non-existant
+   terms.
+
+01-15-2002  1.1.24 Final
+- HandleSGML can now use a CharToByteConverter for non-latin1 data.
+- The next three fixes handle CORC problem of extracting records from a bad
+   database:
+- HandlePDB reports IOExceptions when reading a record and then tries for the
+   next record.
+- FragmentFile.getBuffer() reports the fragmentID and resulting region number
+   when an IOException is thrown reading that region.
+- HedrFile.getNextBerRecord() can skip past bad record ID's.
+- In BTreeDictionary, CacheSize is serialized, along with dbname.
+- Added a setCacheSize() method to Cache, IndxFile and BTreeDictionary.
+
+01-14-2002  1.1.23.2 Interim
+- Added ExtractIndexTerms which takes a database name as its single argument
+   and generates a file named 'terms' with the index terms and associated data.
+- Added RebuildSalvagedBTD which reads the 'terms' file and produces a new
+   BTreeDictionary
+- Added UpdateBTreeDictionaryFromJournal which takes a database name (minus
+   the .pdb) and a journal name and updates the database with the contents of
+   journal.
+- BTreeDictionary serializes and deserializes the objects that are given to
+   it.  It still assumes that the keys are Strings.
+
+01-12-2002  1.1.23.1 Interim
+- In BTreeDictionary, added printStackTrace() before throwing RuntimeExceptions
+- In BDAMfile, had added an existence test to the constructor.  That test is
+   unreliable in old VM's for 2GB db's.
+- In BTreeDictionary, added transaction journalling on puts and removes.
+   Added setJournalling(boolean) and setJournalName(String) methods.
+   Defaults are true and BTreeDictionary.transaction.journal.
+   Set default cache size to 4000.
+
+01-08-2002  1.1.23 Final
+- When a Bosc blows up, it notifies all its FileSets that anyone waiting for
+   buffers to be freed up can stop waiting.
+- The Cache.read() method checks the stopWaiting variable which will be set
+   when there is no point in waiting for a buffer.  A RuntimeException will
+   be thrown when this happens.
+- Added a setStopWaiting() method to FileSet to let the IndxFile and
+   FragmentFile Cache objects know that they should stop waiting for a buffer
+   to be freed.  This is probably because the owner of the buffer just blew up.
+- IndxFile.replaceTerm() was not correctly replacing the term when that
+   term caused an index node to overfill.
+- IndxFile and Term need to know the difference between finding a zero-posted
+   and a non-zero-posted term.
+- In IndxFile, nextTerm() and getFirstTerm() were not skipping the zero-posted
+   terms.
+- In Cache, when trying to find an empty region, we were not taking the Region
+   header into account.
+- FileSet will save the database description when creating a new database.
+- In FreespaceFile, when returning empty regions, we were lying about the
+   amount of freespace available.
+- FreespaceManager was not updating all its tables correctly when space was
+   returned to it.
+- IndxFile no longer tries to return empty index nodes to the FreespaceManager,
+   which means that all the UpdateParent() baloney goes away.
+- In IndxFile.removeTerm(), if the term being removed is the last term in the
+   node, then we just set its postings to zero and ignore it.
+- Removed the main() method.  The BTreeDictionary is a much better unit test
+   for IndxFiles.
+- Made IndxFile.validate() able to handle zero-posted entries.
+- Made IndexNode.validate() able to handle zero-posted entries.
+- Made IndexNode.replaceData() able to handle entries with no data.
+- Made the saveDBDesc() method in Bartlett static so that it could be used by
+   other classes.
+- FreespaceManager.setFreebytes() wasn't updating the MasterFreespaceRegion
+   when empty regions were being returned.
+- FreespaceFile.returnEmptyRegion() was telling the FreespaceManager that
+   a region was being returned with <blocksize> freebytes and the number
+   was really <blocksize>-Region.SizeOf().
+- Cache.getEmptyRegion() was asking for regions with <blocksize> bytes free
+   when the max available is really <blocksize>-Region.SizeOf().
+- IndxFile.RemoveTerm() wasn't decrementing the number of index regions when
+   returning an empty index node to the FreespaceManager.
+- Bartlett.saveDBDesc() is now static so that FileSet can use it to save
+   the dbdesc for BTreeDictionary.
+- The BTreeDictionary.main() method takes an argument specifying the number
+   of variants of the regression test that should be run.
+- IndxFile.validate() wasn't freeing up all the Terms it was getting.
+   UpdateParent() was messing up when the last term in a region was going
+   away.  Added a bunch of debuggery.
+- In BTreeDictionary, added constructors that allow the specification of the
+   database blocksize and cache size.  Added close(), isEqual(Hashtable),
+   finalize() and toString() methods.  Added some debuggery and a tougher
+   regression test.
+- BDAMfile.close() prepared for the file never having been created because it
+   never left memory or never got committed.
+- In FragmentFile, removed the finalize() method which was doing a late commit
+   of the database.  If the application didn't do a commit, then finalize
+   shouldn't either.
+- In FreespaceFile.close(), don't commit the file if the return code is
+   non-zero.
+- Hardened the toString() method in IndexNode.
+- Jon finally ran through an untestable (and thus uncompleted) part of
+   IndxFile.  When updating a parent node, the new pointer term to a child
+   region was bigger than the old term and caused the parent node to split.
+- In BTreeDictionary, for the null constructor, deferred the actual
+   construction of the database until something got written to it.
+- Made BTreeDictionary.getString() public.
+- Make all the public methods of BTreeDictionary synchronized.
+- Added the keys() method to BTreeDictionary.
+- Created a TermEnumeration class which enumerate the Term objects in an index.
+- Created a StringTermEnumeration class which extends TermEnumeration and
+   provides an enumeration of the String parts of the terms and is responsible
+   for freeing up the Term objects returned by TermEnumeration.
+- Created a BTreeDictionary class which implements a java Dictionary using
+   the index of a Pears database.  It implements Dictionary and Serializable.
+   It has a constructor that accepts the name of an existing database.  It
+   has a commit() method that lets you commit your changes without going
+   through the serialization process.
+- Bartlett wasn't asking its embedded Bartletts to close when it closed while
+   building a record-partitioned database.
+- FileSet shouldn't automatically open a journal unless the open mode is
+   JOURNALLED_UPDATE.
+- Changes were made to FreespaceFile, FileSet and BDAMfile to support the
+   deferring of the database file creation until something actually needs to
+   be written to disk.  This is to support PearsHashtable which might never
+   need to write anything.
+- Added the database pathname to the Bartlett activity log.
+- The MarcLeader class used by HandleUSMARC was barfing on some records that
+   Jeff Young had.  The records had a null in byte 22 of the leader where we
+   were expecting a digit or a blank.  We treat the null like a blank now.
+- RecordHandler's main() method doesn't choke on CharConversionExceptions
+   while loading records.
+- Added a loadStandardConverter() method to RecordHandler.
+- Put back the support for InputStreams into the RecordHandlers.
+- Replacing MappedPostingsList with the one from Pears-1.1.20.  This will
+   undo the fix for the gas in the postings file, but may end the crashes
+   of the CORC RC database.
+- In BDAMfile.OpenJournal(), it puts a message to System.out if it catches
+   an I/O error while opening the journal.
+- In the Bartlett activity log file, the running embedded flag was always
+   false.  Changed it to runningFromMain.
+- In Bartlett, added the database name to the name of the activity log file.
+- In Bartlett, the SimpleDateFormat used for the activity log was not quite
+   correct.  Changed Hms to HHmmss.
+
+11-30-2001  1.1.22 Final
+- Bartlett was constructing a bad activity log filename on CORC01.
+- Bartlett was crashing on the exception for the bad activity log.  Now it
+   reports the exception and continues.
+- BDAMfile doesn't try to save the journal hashtable if the file was opened
+   for input.
+- Bartlett writes an activity file if either the host machine is "corc01" or
+   the environment variable "BartlettCollisionDirectory" is set to a
+   directory name.
+- validate and IndexLoop both report their Pears version at the start of their
+   runs.
+- RecordHandlers can no longer be passed an input stream.  They must be
+   passed the name of the file to be read. (This should fix the percent
+   done bug in HandleTransactionJournal.)
+- Pulled the record input threading code from Bartlett.
+- Fixed a bug in the record skipping logic.  When loading records, Bartlett
+   counted the bad records.  When skipping records, Bartlett did not count
+   the bad records and thus skipped more records than it should have.
+- Turned off some debuggery in pears.java.
+- Made one of HandleSGML's fromDataDir footprints private.
+- Bartlett copes better with EOF conditions on input.
+- HandleSGML's fromDataDir() method will work without a .tags file.  It
+   produces a trivial translation of the DataDir to XML.
+- BDAMfile doesn't create a journal if the database is opened for input.
+- BDAMfile reports every 10,000th record that it commits from the journal.
+   (On a big journal commit, it's nice to get a little feedback that it's
+   still running.)
+
+11-04-2001  1.1.21 Final
+- Bartlett's -xj (don't commit the journal) flag works correctly now.
+- BDAMfile is prepared to be told not to commit the journal.
+- FileSet automatically tries to open a journal file, if one is present.
+- FreespaceFile and FileSet have setNoJournalCommit() methods.
+- Region0 and BDAMfile had their file "opened and closed properly" logic
+   removed.  It wasn't being used properly and it was causing the timestamp
+   on files to change, even when no changes were made to the database.
+- BDAMfile.java was changed so that if a database journal is created, then the
+   database is closed and reopened in INPUT mode so that the database will
+   not be accidently written to.  It is reopened for UPDATE mode when doing
+   a commit().  (Timestamps for databases should not change until the journal
+   is actually committed.)
+- FilterTransactionJournal will accept startDateTime and stopDateTime
+   parameters.
+- HandleUSMARC, HandleSGML, HandlePDB, HandlePica, HandleMARC, HandleDelimited,
+   HandleChinaMarc, RecordFilter and RecordHandler can all throw an
+   IllegalParameterException when parsing a .ini file.
+- HandleBER calculates the percentageDone().
+- HandleBER shouldn't convert fields unless a converter has been explicitly
+   specified.
+- HandleUSMARC loads the USM94 converters automatically.
+- Bosc's nip ignore logic was looking for adjacent 'd' and 'i' nips and it
+   should have been 'r' and 'i' nips. 
+- Bartlett shouldn't override the Cache manager's lock wait time unless it
+   gets a non-zero value to override it with.
+- Bartlett writes its current nip bucket to BoscErrorNips when a Bosc fails.
+- Improved Bosc's exception handling.
+- Bartlett will not create BoscBuckets with fewer than 100 nips in them.
+- MappedPostingsList was writing a new postings list map to the postings file
+   every time the map was touched, but it wasn't deleting the old map.  This
+   was because the cleanup() method was stomping on the mapID that was
+   supposed to tell us that there was an existing map.
+- FreespaceFile.commit() was writing region zero, even though no changes had
+   been made to the file.
+- Bartlett can set waitForever and waitTime any of three ways: on the command
+   line as -xw[<millis>] where the -xw turns off the default forever wait and
+   the optional <millis> can override the default wait time of 15 seconds; in
+   the database description file as waitForever and waitTime parameters in the
+   [Bartlett] section or as Bartlett methods setWaitForever and setWaitTime.
+- The FileSet and IndxFile classes now have setWaitForever and setWaitTime
+   methods.
+- The buffer Cache can be told not to wait forever for buffers now.  In
+   addition, the default wait time of 15 seconds can be overridden.
+- Embedded Bartlett had a default maxNips of 5K.  Upped that to 32K.
+- maxNips can now be specified in the [Bartlett] section of a database
+   description.
+- The newBartlett() method can be passed the same database name with different
+   database description .ini files.  But, it was ignoring the .ini file when
+   asked to fetch a Bartlett from the pool for that database and usually
+   returned the wrong one.  It now uses the database name and .ini file name
+   to generate the key for fetching a pooled Bartlett.
+- The Pears.findTerms() method was not prepared for wildcard characters in
+   a wordlist.
+
+10-09-2001  1.1.20 Final
+- Changed the default blocksize for the databases from 4096 to 16384.
+- Bartlett's lockDB method wasn't prepared for the lock server to be
+   unavailable.
+- Removed the TrimmedPhrase, CORCArchiveNum and PortalArchiveNum indexing
+   routines.
+- Bartlett was incorrectly replacing records when doing reindexing and it
+   shouldn't change then accession number index when reindexing.
+- Bartlett wasn't being patient about waiting for the lock server to respond.
+- Stats weren't reported correctly for record partitioned databases.
+- Bartlett was not prepared for writing nips for a record partitioned database.
+- When building a record partitioned database, the DBReporter of the main
+   Bartlett doesn't exist.  A new method has been added to Bartlett,
+   getDBReporters(), that returns an array of DBReporters, one for each
+   Bartlett partition.
+- pears.java has a toString() method that dumps the same kinds of data that
+   light.java did.
+- Bartlett was using the same nips files for all the spawned Bartletts when
+   building a record partitioned database.  Now it mangles the names of the
+   nip files.
+- pears.util.TransactionJournal had a serious bug in its write() method.  All
+   records were being written with a transaction type of DELETE.  Since the
+   Transaction journal record handler was ignoring the delete flag anyway, this
+   problem didn't appear in the tests.
+- HandleTransactionJournal was ignoring the DELETE flag in the transaction
+   records.
+- Bosc's removeIndex() method hadn't been tried in a while and needed some work
+   to get it working right again.
+- HandleBER accepts doNotConvert* parameters in the .ini.  The value of that
+   parameter is a tagpath to a field of binary data that should not be
+   converted to Unicode.
+- HandleDB extends HandleBER instead of RecordHandler.  It uses the toDataDir()
+   method that it inherits from HandleBER which now includes characterset
+   conversion.
+- HandleBER is now prepared to do characterset conversion.
+- The variables inputFileName, recordFilter, lcc, lbc, ctbc, btcc,
+   isDataDirFilter and ignoreRecoverableErrors were moved out of the various
+   record handlers and into the RecordHandler class.
+- Support for char and byte conversion moved to RecordHandler.
+- Fixed bug in HandleSGML.  It wasn't using the new full tagpaths when
+   converting SGML data.  (Full tagpath code was working for the
+   HandleDelimited class which extends HandleSGML, but we hadn't tried it
+   for SGML data.)
+- Added code to the USM94 converters to handle new Arabic characters
+   (zero-width joiner, zero-width non-joiner, Arabic thousands separator,
+   right double-quote, and left double-quote.)
+- HandleDelimited was insisting on reading the column labels from the first
+   line of the input file, even if there was no input file.
+- HandleDelimited now uses a tab as the default field delimiter (was '|').
+- Added indexing parameters 'bounds', 'indexAfter', 'indexUpTo',
+   'joinFieldsWith', 'replace' and 'subfield' to Phrase.
+- Added indexing routines LCClass and YearRange.
+- ORG.oclc.util.Util is no longer carried in the Pears jar.
+- Added indexing routines PhraseMinusBoundPhrases and PhraseWithinBoundPhrases.
+- validate now has an args constructor and a run() method which does not
+   do a System.exit when ending.
+- Bartlett does not throw a RuntimeException when ending with condition code
+   zero
+- Moved the variables numBytesRead, numGarbageBytesRead, numRecordsConverted,
+   numRecordsMade, numRecordsRead and numRecordsSkipped into the RecordHandler
+   base class.  Added accessor methods for those variables to RecordHandler.
+- Bartlett was incrementing and decrementing its numDeleted variable
+   unnecessarily when replacing records. (Caught during a code walkthrough.)
+- Added accessor methods getNumBadRecs() and getDBReporter() to Bartlett.
+- Added accessor methods getNumRecs(), getNumTerms(), getNumPostingsLists(),
+   getNumRegions(), getBlocksize() and getFilename(), getNumDataRegions,
+   getNumIndxRegions, getNumMiscRegions to DBReporter.
+- Added accessor method getDBReporter to validate.
+
+08-16-2001  1.1.19 Final
+- Added IllegalParameter and MissingParameter exceptions to the pears util
+   package.  These can be thrown by .ini file processors.
+- The SGML and Delimited RecordHandlers have fromDataDir methods now.
+- RecordHandlers that use Vectors use the Vector.addElement method instead
+   of Vector.add.  This makes them compatible with old versions of java.
+- Smartened up Bartlett's percent done report when using the -s or -n parms.
+- Bartlett can now build partitioned databases.
+- Created the PartitionByNumericFieldValue class to partition a database by
+   a numeric value in a field.  The class can be told to ignore non-numeric
+   text in the field, such as the leading OCM on OCLC numbers.  The class can
+   distribute the records evenly over a known number of partitions or put a
+   specified number of records in each partition.
+- Created a PartitioningInterface in the Bartlett package.
+
+07-18-2001  1.1.18 Final
+- FastStringTokenizer can support escaping delimiters.  Backslashes or
+   double-quotes can be used.
+- pearsTerm throws a Diagnostic exception if a truncated term generates more
+   than db.maxTermExpansion terms.
+- The routine for creating restrictors from words (termrest()) wasn't prepared
+   for no words being extracted from the document.
+- Added an addUTF() method to DataDir that accepted a char array as well as
+   a String.  This saves an unnecessary String constructor in several places.
+- RecordFilter.isKeeper() can throw a MalformedRecordException.
+- HandleSGML was enhanced so that it could become the base class for
+   HandleDelimited.  Tags can now map to tagpaths instead of simple tagvals.
+- HandleDelimited was added to the RecordHandler package.  It handles text
+   delimited records.
+- HandlePDB added a percentDone() method.
+- HandleMARC got sped up slightly with the elimination of some unnecessary
+   String constructors.
+- IndexingRules has logic to collapse redundant indexing rules and had a
+   bug when one of the candidate rules had parameters and the other didn't.
+- Added a BerInteger indexing routine. OCLC# is encoded as an integer in
+   some of our records.
+- Added a StripHTML parameter to the Phrase indexing routine.  This causes
+   it to strip HTML tagging from fields to be indexed.
+- Words.java needs to call Phrase.collapse() if Phrase.stripHTML is turned on.
+- The BER record handler needs to cope with a new way of detecting a normal
+   EndOfFile condition.
+- Added some diagnostic dumps to BDAMfile.write() when seeks fail.
+
+05-17-2001  1.1.17 Final
+- Zbase threads were running forever.  Turns out that a tester had entered
+   the search rn:441* and pears was busily building a list of record numbers
+   that started with 441.  If it had ever ended, the Newton query engine
+   would have refused to OR the list of terms together.  The solution is
+   to have pears.open() read the value TermExpansionMax from the database
+   .ini file and to have pearsTerm.findTruncated pass that value along to
+   the IndxFile.getTerms() method.  GetTerms builds an array that goes up
+   to one more than the limit.  That way, the boolean logic layer can detect
+   that we've exceeded the max and choose to either throw away our work or
+   process those terms that we returned.
+
+05-02-2001  1.1.16 Final
+- IdirFile had a hard coded array size that was being exceeded by long
+   batch jobs adding records one at a time over several days to the same
+   copy of Bartlett.
+- Added the Numbers and MarcBibliographicLevel indexing routines for
+   Stanford/GeoRef.
+- Added the GeorefMarc RecordHandler for Stanford/GeoRef.
+- Created a HandlePica RecordHandler to produce Pica records.
+- RecordHandler main() wasn't calling the RecordHandler's Input method if it
+   was doing BER input.
+- Added getLargestIndexID() accessor method to util.IndexingRules.
+
+03-16-2001  1.1.15 Final
+- Added a parameter to RecordHandler that tells it to include the bad records
+   in the count of records processed.  (It used to ignore them and try to
+   produce as many records as requested.)
+- The main() method of RecordHandler returns a status code of 16 if it
+   catches any exceptions.
+- HandleUSMARC was throwing the MalformedRecordException when processing
+   records coming from PRISM.  It turns out that OCLC has hijacked byte
+   22 of the MARC leader.  That byte should have a digit in it for strict
+   MARC but can be ignored in USMARC.  HandleUSMARC now turns that byte into
+   '0'.
+- RecordHandler/MarcLeader now includes a meaningful error message when
+   it throws a MalformedRecordException having detected garbage in the leader.
+- Copied HandleUSMARC into a new class, HandleMARC.
+- HandleChinaMarc extends HandleMARC instead of HandleUSMARC.  HandleChinaMarc
+   depends on the value of leader byte 22 that HandleUSMARC sets to '0'.
+
+03-05-2001  1.1.14
+- Bosc had a leftover debugging System.exit() in an exception handler.  This
+   trashed a zbase for CORC which resulted in a trashed database.
+- In HandleGeorefMarc, the 998$b flag for and abstract was changed from 'a'
+   to 'abs' and the julian date was moved into 997$a.
+- Added support for DataDirFilters to HandleDB.
+- The SGML RecordHandler was doing case-insensitive tag comparisons.  Worse
+   yet, when it generated a .tags file, it was shifting all the tags to lower-
+   case.  It doesn't do those things any more, which may be a problem for
+   folks with lower-case .tags files.  Sorry.
+- Enhanced the "illegal subfield tag" diagnostic message in HandleUSMARC.
+- Added a status dump to Bartlett during the record skipping step.
+- Created a RecordHandler for Georef.
+- Added a percentDone() method to RecordHandler, HandleUSMARC, HandleDB and
+   Bartlett.
+
+01-24-2001  1.1.13
+- The phrase query normalizer was ignoring the "collapse" parameter.
+   (Phrase.filterit() was not calling Collapse() before calling ExtractTerms.)
+- NullPointerException in Bartlett.termrest.getValue().  It wasn't prepared
+   to discover that no terms had been extracted for the index it was building
+   restrictors for.
+- Bartlett blew up in CORC when updating a database while validate was
+   running.  It seems that validate opened the database for update so that
+   it could validate freespace.  (There is no FreespaceManager if the db is
+   opened only for input.)  When validate was done, the FreespaceManager was
+   writing its cached (and out of date) idea of what freespace looked like.
+   validate now opens the file for update only if the -regions flag is turned
+   on.  FreespaceManager doesn't write its regions unless they have changed.
+   FreespaceFile doesn't write region 0 unless other regions have been written.
+- IndexLoop was also opening the database for update to do freespace
+   calculations.  Now it only does that if the -f flag is turned on.  The other
+   freespace changes above will make this safe to do while updates are running.
+- Added a ChinaMarc RecordHandler.  This required changes to HandleUSMARC
+   and the MarcLeader and MarcDirectory objects.
+- Bartlett was reporting the wrong value for the count of immediate nips
+   in the end report.
+
+12-19-2000  1.1.12
+- Added support for a null input file for the Input method of HandleSGML.
+   (Jeff has an embedded SGML RecordHandler that he is passing SGML that
+   he got off the web.)
+- Jeff Young added a fromDataDir method to allow HandleSGML to make SGML
+   records.
+- Jenny make a fix for date range searching.
+- Bartlett was ignoring the inifile passed to it in it's constructor.
+- ByteToCharUSM94 was moving garbage into the Unicode string in the position
+   where the escape was in the USM94 byte array.
+
+11-02-2000  1.1.11
+- CORC was failing to fetch Dewey records that it had already fetched
+   during the session.  The problem was caused by jumping around in a
+   postings list and some of the components keeping state that they shouldn't
+   have.  MappedPostingsList resets a fragment's nextEntryNum to zero when it
+   walks sequentially into that fragment.  This may clean up some of the
+   mysterious DbOutOfSync errors in the CORC logs, because we were throwing
+   that exception while we were messing up.
+
+10-25-2000  1.1.10
+- CORC was seeing apparent repeated records in the Dewey database.  The
+   problem occured when fetching records by relative record number from
+   fragments other than the first.  Sequential walks through the fragments
+   worked just fine.  The MappedPostingsList.setNextEntryNum() method
+   was doing everything except set the nextEntryNum variable.
+
+10-04-2000  1.1.9
+- Bartlett.newBartlett can be passed a dbdesc IniFile along with the dbname.
+   This lets embedded Bartlett users specify transactionJournals and
+   partitioned indexes with a lot of bother.
+- An update stopped with an apparent freespace problem (Asked for 16375 bytes
+   but got a regions with nnn bytes instead.)  Turns out the index was
+   misbehaving when an index node lost all its terms.
+- MappedPostingsList was blowing it when being asked to get the first recordID
+   from a fragment other than the first.  This was an ordinality problem.
+   (I can't believe we've never run into this before!!)
+- We were writing a new posting list map to the postings file every time we
+   touched the list and the CORC database grew significantly as a result.
+   (Change in MappedPostingsList.save().)
+- Freespace and fragment statistics generated in validate when the -regions
+   parm is specified.
+- setIndexPartitionFile method added to Bartlett.
+- A rollforward transaction journal has been added to Bartlett.
+- A transaction journal RecordHandler has been created.
+- Reading beyond the end of the file while doing a search gets a
+   DbOutOfSyncException instead of an IOException.
+
+08-31-2000  1.1.8
+- Bartlett was doing a commit before reading in the written nips and then
+   doing another commit afterwards.  Now it only does the last commit.
+- Bartlett threw an ArrayOutOfBoundsException when the number of nips
+   extracted was less than the square of the number of threads.
+- CharToByteUsMarc (extended by CharToByteUSM94) wasn't switching character
+   sets correctly across fields.
+- ByteToCharUSM94 wasn't making a distinction between the g0 and g1 graphic
+   sets.  In this case, the ansel b0 in the g1 graphic area following a greek
+   char in the g0 graphic area was interpreted as being an illegal greek
+   character. (he, he, it turns out PRISM has the same bug!)
+- IndexNode has a main that lets you dump nodes from a database.
+- Bosc blew up with a report that a parent node had an incorrect pointer to
+   a child node.  Fixed the problem in IndxFile that caused the bad pointer.
+- IndxFile has a main that lets you fix bad parent pointers.
+- Validate wasn't catching the bad pointer problem.  Enhanced IndxFile.validate
+   to report it.
+
+07-14-2000  1.1.7
+- Bosc detects duplicate record numbers being added to a postings list, dumps
+   everything it knows about its state and quits.  So far, this problem has
+   only occurred as a result of another Bosc error, but when it happened, it
+   resulted in a corrupted database.
+- Bartlett accepts a -c parameter which allows the user to override the
+   default RecordHandler class.  (e.g. -cBER)
+- When writing nips, the redundant terms are squeezed out.
+- When reading nips, the UTF8 terms from the disk are saved and used by Bosc.
+
+07-07-2000  1.1.6
+- Added vertical bar sequences for circumflex (|cf|), grave (|gr|) and
+   tilde (|td|) to LocalByteConverter.ByteToCharOclcAscii.
+- pearsTerm and pearsList were modified to add the original database exception
+   message when they throw a DbOutOfSyncException.
+- util.SimplePatternMatcher copes with a missing EOL indicator.  Minor
+   improvement to the main method.
+- ByteToCharUSM94 now prepared for escape sequences in the middle of
+   diacritics.  Improved error messages.
+- Bartlett and IndxFile removed addNipAndSplitNode code.  Was there to keep
+   multiple Boscs from trying to use the same index node and waiting on each
+   other, but it was buggy and not useful for anything but tiny databases.
+   (This was Steve Winer's problem with updating the corc3Save database.)
+- Added paranoia check to MappedPostingsList as a result of the bug above.
+- Added more debuggery to Bocs as a result of the bug above.
+- I/O times weren't thread safe in BDAMfile.java
+
+06-27-2000  1.1.5
+- Turned off some debuggery in pearsRestrictor.
+- Added some debuggery when throwing DbOutOfSyncExceptions in pearsTerm and
+   pearsList.
+- Bartlett was blowing up when deleting the only term in an IndexNode.
+- Moved the DataDir vertical bar code to ORG.oclc.util.Util so that it
+   could be used by JaSSI.
+- Bartlett, RecordHandler and IndexLoop command line arguments can now have
+   a space between their flag and their value (e.g. -i test.ini)
+
+06-23-2000  1.1.4
+- DataDir.addUTF() converts OCLC vertical bar sequences to the correct Unicode
+   character before converting that into UTF.
+- DataDirTrees no longer go into infinite recursion loops with bad DataDir's.
+   Instead, they count how many times they've recursed and then throw away
+   the old DataDir.
+
+06-22-2000  1.1.3
+- LocalByteConverter.ByteToCharUSM94 throws an exception when unable to
+   translate a character.  (Used to quietly translate them to 0xfffd.
+- LocalCharConverter.TableUsMarc94ToUnicode was incorrectly translating
+   Arabic digits and was missing all Arabic diacritics.
+
+06-20-2000  1.1.2
+- In RecordHandler.HandleUSMARC, catches CharConversionExceptions and rethrows
+   them as MalformedRecordExceptions
+- In RecordHandler.HandlerUSMARC, if ignoreRecoverableErrors is set, then
+   illegal subfields are turned into subfield 9's.
+- In DataDirTree, we were exchanging fldid and asn1class.
+
+06-19-2000  1.1.1
+- In the Unicode to USM94 routine (CodeExtension7And8BitAnsiX341.java), blanks
+   weren't being treated as graphics characters and weren't forcing code page
+   changes.
+- In the USM94 to Unicode converter, convert the illegal OCLC-MARC character
+   0xBE to a small script l.
+
+06-16-2000  1.1.0
+- All code reextracted from sccs.
+
+06-16-2000  1.0.10
+- IndxFile.getTerms was getting truncated searches with no actual wildcards.
+   This was working but was pretty expensive.  It now turns them into ordinary
+   searches.
+- Added a bunch of UTF8 support to DataDir.
+- In IndxFile and SimplePatternMatcher, removed all ASCII wildcard characters
+   and replaced them with NewtonDatabase constants.
+- Found another multiple accessionNumber bug.
+- I/O times were garbage if an exception was ever thrown.
+
+06-12-2000  1.0.9
+- Bosc runs in its great-grandparents ThreadGroup.  (Jenny thinks that the
+   lingering Bosc threads were causing problems with hanging socket reads.)
+
+06-07-2000  1.0.8
+- Bartlett was getting into a state where all records looked like they had
+   multiple accession numbers after encountering one with two accession
+   numbers.  (We weren't clearing out the RecordIndexer hashtables when
+   throwing MalformedRecordExceptions.)
+
+06-05-2000  1.0.7
+- After a query, displaying anything except the first record got you the first
+   record.  (MappedPostingsList blew fetching anything but the first record
+   number off of a postings list, the first time the list is accessed.)
+- IndexRoutines.Phrase was using getString instead of getUTFString in one spot.
+- Needed to let the BasicFileStats class know that BDAMfile could be
+   polled by them.
+- Made debug in IndexRoutines.Phrase protected so extending classes could
+   see it.
+- HandleUSMARC wasn't loading a LocalCharConverter when being used to
+   generate USMARC records from BER.
+- Added a -c parm to Region.main() to convert chars to UTF8.
+- pearsList throws a DbOutOfSyncException when walking off the end of a
+   postings list.
+- Classifier blew up when given a zero-posted single-term query.  (Needed to
+   check postings before asking for records.  Also needed to check that the
+   components array existed.  Doesn't get returned in this special case.)
+- IndexLoop now accepts a -i<indexID> parameter which causes it to collect
+   information for that index only.
+- Record count was off by one according to validate.  (HedrFile.ReplaceRecord,
+   which is only called to replace a dbdesc, called DeleteRecord which
+   decremented numRecs and then WriteRecord which didn't increment numRecs.
+   ReplaceRecord now increments numRecs.)
+
+05-18-2000  1.0.6
+- Near and Within prox operators were reversed.  (Fixed pearsProx.)
+- Bug fixes to IndexLoop
+- HandlePDB was not prepared for DataDirFilters.  (Threw a ClassCastException
+   for BerString.  The filter was expecting a DataDir.)
+- Added DataDir nodes weren't being added.  (Replace() method wasn't resetting
+   the last_child variable.)
+
+05-15-2000  1.0.5
+- Added the BasicFileStats interface to BDAMfile.java
+- Turned on some debuggery in IndxFile for bad truncated term searches
+- The pearsList constructor throws a DbOutOfSyncException if any exceptions
+   are noticed.  (We were going off the end of lists that were being updated
+   and throwing an ArrayIndexOutOfBoundsException.  Now we'll do retries.)
+- Same with pearsTerm.
+- Giving Bartlett the -n0 (numRecs==0) flag keeps us from trying to open an
+   input file, starting any input threads and opening a badRecords file.
+
+05-11-2000  1.0.4
+- When numReadLocks goes negative, it was never being reset to zero, resulting
+   in loads of dumps in the zbase logs.
+- A key can be specified in the [LockServer] section of the .ini file.
+
+05-03-2000  1.0.3
+- Turned off some of the resync dumps.
+- Fixed an error in pearsProx when asking for prox info in indexes with none.
+- Enhanced IndexLoop
+- New putProp utility to changes the property values in a database.
+- Added parm to SmartReplacement/Classifier main to use in regression tests.
+- IndexRoutines.WordsMinusBoundPhrases didn't work as a normalizer.
+- IndexRoutines.Phrase messed up if it was first invoked for an empty field.
+
+04-25-2000  1.0.2
+- Turned the ignoreMe code back on in Bosc.  This will cause it to detect and
+   eliminate adjacent identical delete and insert nips.
+- Turned off the postings distributions dumps in IndxFile.toString().
+- Jenny made a fix to RankATC and RankATN.
+- Added a -ft flag to Classifier so that it can be used in the regression test.
+
+04-21-2000  1.0.1
+- Browsing beyond the end of an index returned nothing.  pears.browseTerm()
+   was ignoring the "prev" flag that was passed to it.
+- NoSuchRecordException needed to be handled in a couple of new places
+- BDAMfile will call fd.sync() if the -fs flag is turned on in Bartlett
+
+04-20-2000  1.0
+- Built with SS 4.1.1 code base.
+- Fixed Integer.maxInt not being encoded in BER utilities. (RecordHandler)
+- New indexing routines from Jenny.
+- Journal regions still held in cache are committed from cache instead of
+   being reread from the journal.
+- Bartlett hung if stopwords were specified for more than one index.
+- Embedded Bartletts start with 5K nips instead of 512K.
+- Bartlett and Bosc were deadlocking waiting for each other.  This only
+   happended under Java 1.2 and Bartlett running with the -fi flag.
+- Using the RecordIndexer.IndexRecord method to just get accession numbers
+   out of records was causing some grief.  RecordIndexer now has a
+   QuickIndexRecord method.
+- Purge journal after online update failure.
+- Pears.getRichProperties() returns .ini information too.
+- Support returning stopword indicators at query time.
+- Deleting non-existant records is no longer a fatal error.  They are
+   reported at the end of the run.
+- Added support for marc indicators in IndexRoutines.Phrase.
+- Added support for marc non-filing indicators in IndexRoutines.Phrase.
+- Created MarcLanguage indexing routine.
+- Created MarcFormat indexing routine.
+- Created MarcTypeOfMaterial indexing routine.
+- Created an index routine test driver (IndexRoutines.IndexRoutines).
+
+03-30-2000  0.7.8
+- Bartlett.AddJustOneRecord(), addRecords() and DeleteJustOneRecord() catch
+   all exceptions and call purgeJournal() before rethrowing the exception.
+- Fixed a problem with SmartReplacement/Classifier and a change I'd made in
+   the extracted terms hashtable.
+- pears.getRichProperties returns a merge of the initializing .ini file and
+   the database's own properties.
+
+03-29-2000  0.7.7
+- Added the idea of Immediate indexes to Bartlett and set the RecordID index
+   as an immediate index.  Use the -fi flag to turn this on.
+- Index=0 tells the StopwordEnforcer to apply the stopwords to all indexes.
+- Added underscore as a default trim character.
+- Fixes to FastStringTokenizer and Words to support startOffset parm
+
+03-23-2000  0.7.6
+- Bosc was not unlocking buffers when the nip ended up getting thrown away
+   (For instance, a delete nip for a term that didn't exist.)
+- Single record update in CORC was reporting locked buffers in resync and
+  they weren't being cleanup up properly.  They shouldn't have been locked,
+  but I haven't found the source of that error yet.
+
+03-21-2000  0.7.5
+- Bartlett had all sorts for System.exits.  It still uses them if it is 
+   running from main and throws runtime exceptions otherwise.
+
+03-19-2000  0.7.4
+- Fixed bug in merge sort code that caused it to ignore a stream until the
+   very end.
+- Added Bartlett.setNumBoscThreads() method.
+
+03-17-2000  0.7.3
+- New indexing routines from Jenny.
+- Tighter merge sort code in Bartlett.
+
+03-15-2000  0.7.2
+- Change IndexRoutine to not extend Thread.
+
+03-10-2000  0.7.1
+- Fixed HandleSGML exception.
+- New indexing routines from Jenny.
+
+03-03-2000  0.7
+- Modified Bartlett to write out all of the nips generated and then merge sort
+   them and call Bosc.
+- Fixed NIP counts in Bartlett.
+- Fixed gas problem in index.
+- Update index term count when calling addNipAndSplitNode.
+- Added option to enable term extraction threading in Bartlett.
+- New indexing routines from Jenny.
+- Only do an uneven node split if the term we are adding is the
+   last in the index, otherwise split at the term if it is after
+   the midpoint and at the midpoint if it is before the midpoint.
+- Changed Phrase.Assemble form protected to public.
+- Added ORG.oclc.pears.util.DumpNIPs.
+
+02-16-2000  0.6
+- Fixed Buffer.getStatus to not use the instance variable owner (someone else
+   could be changing it at the same time).
+
+02-14-2000  0.5
+- Dump I/O stats after each Bosc run.
+- Fixed a bug that caused duplicate nips to appear in the postings lists. (Now
+   we use an Arrays.sort footprint that lets us specify the range of nips to
+   sort.  Used to sort all the nips, including leftover ones.)
+- Can specify cache size on pears startup.  NumBuffers=n in the database
+   section and in the IndexFile sections.
+
+02-11-2000  0.4
+- Better diagnostics in CharToByteUsMarc and control characters converted to
+   blanks
+- Better timeings and counts in Cache.
+- New authority indexing routines from Jenny.
+- Reuse the Nip objects in the Nips array in Bartlett.
+- Added additional timeing to Bartlett.
+
+02-03-2000  0.3
+- Made ExtractedTerm poolable.
+- Modified indexing routines to use the pooled ExtractedTerms stuff.
+- Use DataDirTree in Bartlett.DeleteRecord().
+- Added ORG.oclc.corc.authority.IndexRoutines
+- Added ORG.oclc.pears.version.Version.
+- End Bosc threads correctly when there is an exception.
+
+01-27-2000  0.2
+- Added validate calls to Cache.
+- Added a write verify to BDAMFile.
+- Added option to turn I/O verification on and off.
+- Fixed Bartlett to allow the specification of multiple indexes to a 
+   single file.
+
+01-20-2000  0.1.6
+- Bartlett crashed with OutOfMemoryException when using -f1 (Bartlett was
+   instantiating Bosc and calling the run method directly which left Bosc
+   hanging around in a system Thread table waiting to be started and none
+   of Bosc's instance variable were free for garbage collection.)
+- An embedded Bartlett crashed with a negative writeLock count (Bartlett was
+   trying to do a resync before ever having done a commit.  Resync() now
+   insures that an initial commit has been done.)
+- LCSH build crashed with an ArrayIndexOutOfBoundsException (MappedPostingsList
+   was growing the MapData array but not the buffer it was being written to.)
+- Made IndexRoutines.Phrase.Assemble protected so that it could be accessed by
+   extending classes.
+- Modified BDAMFile to throw an exception if we ask for a region for read that
+   is outside of the current file size.
+
+01-13-2000  0.1.5
+- Bartlett giving warnings about locked IdirFile buffers (IdirFile wasn't
+   freeing a buffer after using it.)
+
+01-12-2000  0.1.4
+- Embedded Bartlett blew up opening any database (Bartlett assumed that an
+   inifile had been passed to it.)
+
+01-12-2000  0.1.3
+- Bartlett blew up building a new database with the -f1 flag
+  (MappedPostingsList had a bad test, based on an unreset variable, that
+   caused it to remove a postings list fragment from the postings file.
+   Unfortunately, the fragment was in the indx file.)
+
+01-11-2000  0.1.2
+- Fixed version number scheme.
+
+01-11-2000  0.1.1
+- Fixed single record update problem.
+- Requires ORG.oclc.util.Util modifications.
+
+12-31-1999  0.1    
+- Base release for version tracking.
