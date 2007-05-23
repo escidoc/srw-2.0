@@ -237,11 +237,10 @@ public class SRWServlet extends AxisServlet {
                 }
                 else {
                     String operation=request.getParameter("operation");
-                    if(operation!=null) {
-                        if(operation.equals("explain"))
-                            doExplain=true;
-                    }
-                    else if(request.getParameter("query")==null &&
+                    //MIH changed to one if-statement
+                    if(operation!=null && operation.equals("explain")) {
+                         doExplain=true;
+                    } else if(request.getParameter("query")==null &&
                       request.getParameter("scanClause")==null)
                         doExplain=true;
                 }
@@ -1179,10 +1178,13 @@ public class SRWServlet extends AxisServlet {
 
             // utf-8 bytes seem to have been incorrectly loaded as characters
             // lets load them back into bytes and then rebuild the string
-            byte[] qb=new byte[query.length()];
-            for(i=0; i<query.length(); i++)
-                qb[i]=(byte)query.charAt(i);
-            query=new String(qb, "utf-8");
+            //MIH: avoid NullPointerException
+            if (query != null) {
+                byte[] qb=new byte[query.length()];
+                for(i=0; i<query.length(); i++)
+                    qb[i]=(byte)query.charAt(i);
+                query=new String(qb, "utf-8");
+            }
 
             sb.append("<soap:Envelope ")
               .append("xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" ")
@@ -1499,13 +1501,16 @@ public class SRWServlet extends AxisServlet {
 
     static String encode(String s) {
         StringBuffer sb=new StringBuffer();
-        char c, chars[]=s.toCharArray();
-        for(int i=0; i<chars.length; i++) {
-            c=chars[i];
-            if(c==' ' || c=='<' || c=='&' || c=='>' || c=='"' || c=='\'')
-                sb.append("&#").append(Integer.toString(c)).append(';');
-            else
-                sb.append(c);
+        //MIH avoid NullPointerException
+        if (s != null) {
+            char c, chars[]=s.toCharArray();
+            for(int i=0; i<chars.length; i++) {
+                c=chars[i];
+                if(c==' ' || c=='<' || c=='&' || c=='>' || c=='"' || c=='\'')
+                    sb.append("&#").append(Integer.toString(c)).append(';');
+                else
+                    sb.append(c);
+            }
         }
         return sb.toString();
     }
