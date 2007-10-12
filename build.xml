@@ -15,8 +15,12 @@
         </target>
 
     <target name="compileSRW" depends="init">
-        <javac srcdir="src" destdir="build" deprecation="true" debug="on"
-           includes="gov/**/*.java ORG/oclc/os/SRW/*.java">
+    	
+    	<!--MIH: also include packages de.fiz.escidoc.* in compilation -->
+        <!--javac srcdir="src" destdir="build" deprecation="true" debug="on"
+           includes="gov/**/*.java ORG/oclc/os/SRW/*.java"-->
+		<javac srcdir="src" destdir="build" deprecation="true" debug="on"
+           includes="gov/**/*.java ORG/oclc/os/SRW/*.java de/fiz/escidoc/**/*.java">
               <classpath>
                   <fileset dir="lib">
                       <include name="**/*.jar"/>
@@ -71,9 +75,17 @@
         <delete file="dist/${webappName}.war"/>
         <jar jarfile="dist/${webappName}.war">
             <zipfileset dir="dist" includes="SRW.jar" prefix="WEB-INF/lib"/>
-            <zipfileset dir="conf" includes="*.wsdd web.xml" prefix="WEB-INF"/>
-            <zipfileset dir="conf" includes="SRWServer.props" prefix="WEB-INF/classes"/>
-            <zipfileset dir="conf" includes="*.xsl"/>
+
+        	<!--MIH: add web.xml from conf/escidoc-directory -->
+        	<!--zipfileset dir="conf" includes="*.wsdd web.xml" prefix="WEB-INF"/-->
+        	<zipfileset dir="conf" includes="*.wsdd" prefix="WEB-INF"/>
+        	<zipfileset dir="conf/escidoc" includes="web.xml" prefix="WEB-INF"/>
+
+        	<!--MIH: Copy all configuration-files for escidoc to WEB-INF/classes -->
+            <!--zipfileset dir="conf" includes="SRWServer.props" prefix="WEB-INF/classes"/-->
+            <zipfileset dir="conf/escidoc" includes="*" excludes="web.xml" prefix="WEB-INF/classes"/>
+
+        	<zipfileset dir="conf" includes="*.xsl"/>
             </jar>
         <antcall target="addSupportJarsFromSupportLib"/>
         <antcall target="addSupportJarsFromDistributedLib"/>

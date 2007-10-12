@@ -1,0 +1,155 @@
+﻿OCLC SRWServer:
+
+-Download from http://pubserv.oclc.org/srw/Installation.html
+-extract into eclipse-project
+-run ant checkout (if possible)
+-modify ORG.oclc.os.SRW.SRWServlet.java:
+	add method getWsdl() that contains hardcoded wsdl
+	modify method processWsdlRequest(): call getWsdl() and not engine.generateWSDL(msgContext);
+	patch Method getSoapAction(HttpServletRequest req), dont throw an AxisFault when SOAPAction Header is missing
+-modify gov.loc.www.zing.srw.srw_bindings.ExplainSoapBindingImpl
+	modify Method explainOperation: if recordPacking=string, initialize MessageElement with Text-Object 
+	Text t = new Text(db.getExplainRecord());
+  elems[0]=new MessageElement(t);
+
+-include SRWLucene.jar + dependant libs in lib-Directory (subdirectory srwlucene).
+-include properties-files for escidoc (Dir conf/escidoc)
+-include class-packages de.fiz.escidoc... + dependant libs in lib-Directory (subdirectory escidoc).
+-include AxisServlet in web.xml!!
+-edit build.xml, target war to copy log4j.xml and all escidoc .properties-files in directory WEB-INF/classes
+-edit build.xml, target compileSRW to also compile packages de.fiz.escidoc
+-edit build.properties to change name of war-file
+-run build/war (url of service is dependant on name of war-file!!!)
+
+-configuration-files are in folder conf/escidoc
+-configure via configuration-files
+-put new file log4j.xml in config-dir (log4j.properties does not work)
+-edit SRWServer.props
+-integrate lucene.SWRDatabase.properties
+
+-SRWLucene-Projekt in SRWServer integrieren (http://wiki.osuosl.org/display/OCKPub/SRWLucene):
+	-download SRWLucene sources
+	-put it as a project in eclipse
+	-modify org.osuosl.srw.lucene.LuceneTranslator:
+		make Methods makeQuery non-static!!! because derived class EscidocLuceneTranslator 
+		uses Analyzer in Method makeQuery and Analyzer may not be static.!!!
+	-run build to generate .jar-file
+	-put jar-file into sb/src/WEB-INF/lib-directory
+	
+-fedoragsearch:
+-download fedoragsearch.war
+-extract it into escidoc.ear/fedoragsearch.war
+-
+-in file repository.properties we set the fgsrepository.fedoraSoap to the url
+	of the escidoc-services.In OM there are methods that overwrite fedora-methods.
+	Because of axis-problems, we had to overwrite 2 fedora-type-classes that
+	are normally in client.jar, package fedora.server.types.gen.
+	we deleted the methods getSerializer() and getDeserializer() and put these classses
+	into the package de.fiz.escidoc.om.business.fedora.types.
+
+All configuration-files, additional jar-files and own-implemented java-classes 
+for SRWServer + fedoragsearch are in component sb.
+java-build.xml and sb-build.xml copy the configuration-files + jar-files into escidoc.ear/fedoragsearch.war + 
+escidoc.ear/srw.war
+
+additional jar-files:
+SRWServer:
+lucene-highlighter.jar
+lucene-core.jar
+lucene-analyzers.jar
+lucene-snowball.jar
+SRWLucene-1.0.jar
+
+fedoragsearch:
+lucene-highlighter.jar
+lucene-analyzers.jar
+lucene-snowball.jar
+
+additional classes:
+SRWServer:
+de.fiz.escidoc.sb.lucene.analyzer.EscidocAnalyzer.java
+de.fiz.escidoc.sb.lucene.analyzer.EscidocGermanAnalyzer.java
+de.fiz.escidoc.sb.lucene.analyzer.EscidocEnglishAnalyzer.java
+de.fiz.escidoc.sb.srw.EscidocRecordResolver.java
+de.fiz.escidoc.sb.srw.EscidocSRWDatabaseImpl.java
+de.fiz.escidoc.sb.srw.lucene.EscidocLuceneTranslator.java
+
+fedoragsearch:
+de.fiz.escidoc.sb.lucene.analyzer.EscidocAnalyzer.java
+de.fiz.escidoc.sb.xslt.ComponentAccessor.java
+de.fiz.escidoc.om.business.fedora.types.MIMETypedStream.java
+de.fiz.escidoc.om.business.fedora.types.Property.java
+
+SRWServer:
+	-write own RecordResolver that implements org.osuosl.srw.RecordResolver
+		(integrated in project SRWLucene)
+		->EscidocRecordResolver
+	-write new CQLTranslator (->EscidocLuceneTranslator)
+		because LuceneTranslator just retrieves ids from lucene and not whole hit-objects:
+			-copy LuceneTranslator
+			-write own Method replaceEnvVariables to replace ${..}-constructs in .properties-files
+			-change method search for hit-highlighting
+			-add analyzer!
+			-change method makeQuery(CQLNode node,Query leftQuery), analyze while building Query
+				This is not a real proper fix, it assumes that EscidocAnalyzer users WhitespaceTokenizer!!!
+				-for this, add new Method: getAnalyzedCqlTermNode()
+	-write EscidocSRWDatabaseImpl 
+	 This is done because:
+ 		-we dont retrieve and store all search-hits but only the ones requested
+ 		-we dont use result-sets
+ 		-we do sorting while querying lucene and not afterwards
+ 		-get dynamic index-info from available lucene-fields
+
+	-lucene.SRWDatabase.properties-Datei erstellen und in Verzeichnis conf legen
+	-eine .properties-Datei beschreibt einen index, wenn mehrere Indices angespochen werden 
+	sollen braucht man mehrere .properties-Dateien.
+	-.properties-Datei in SRWServer.props als db (database) registrieren
+	-war-file builden
+	
+Aufruf Suche:
+http://localhost:8080/srw/search/escidocindex?query=fulltext%3Dtisch
+
+Aufruf wsdl:
+http://localhost:8080/srw/search?wsdl
+
+Ablauf Suche:
+org.osuosl.srw.SRWDatabaseImpl.doRequest:
+	cqlTranslator.search, liefert ResolvingQueryResult zurück.
+		
+
+
+
+-Neue Klassen in eigenes package implementieren und database in SRWServer.props konfigurieren
+-3 Klassen: ...Database, ...QueryResult + ...RecordIterator
+-Beispielklassen für DSpace:
+	im Package ORG.oclc.os.SRW.DSpaceLucene
+	SRWLuceneDatabase.getQueryResult:
+		-convert CQL to Lucene-Query
+		-query ausführen, rückgabe: QueryResults-Objekt
+		-über die HitHandles im QuertyResults-Objekt iterieren und in itemHandle, collectionHandle + communityHandle-Arrays sortieren
+		-LuceneQueryResult mit QueryResults und itemHandleArray initialisieren
+	LuceneQueryResult:
+		-hält QueryResults und itemHandleArray als Attribute
+		-und kann aus QueryResults die Trefferanzahl (getNumberOfRecords()) zurückliefern
+		-kann LuceneRecordIterator(QueryResults, itemHandleArray, startPoint) zurückliefern
+	LuceneRecordIterator:
+		-hält QueryResults und itemHandleArray als Attribute
+		-Kann aus if(startPoint<result.getHitCount()) die methode hasNext() implementieren
+		-implementiert nextRecord():
+			-Holt sich aus dem itemHandleArray den record mit der nummer <startPoint>
+			-setzt <startPoint> eins hoch
+			-initialisiert ein Record-Objekt mit String: DC-Record und Schema und gibt dieses zurueck
+			
+			
+Ablauf SRWServer-search request:
+gov.loc.www.zing.srw.interfaces.SRWPort.java
+->gov.loc.www.zing.srw.srw_bindings.SRWSoapBindingImpl.searchRetrieveOperation
+ruft auf einem SRWDatabase-Objekt(db) (das im config-file steht) response = db.doRequest(request) auf
+doRequest holt sich ein QueryResult-Objekt
+	-entweder aus den gespeicherten QueryResults, wenn eine ResultId mitkommt
+	-oder es ruft die Methode getQueryResult auf, die von den das SRWDatabase Objekt implementierenden Klassen implementiert sein muss
+QueryResult-Objekt hält die anzahl gefundener Records,einen RecordIterator dem man start und endrecord mitgeben kann.
+Der RecordIterator iteriert über die Records und gibt einen nach dem anderen zurueck. (Unsortiert)
+-> ein gespeichertes QueryResult kann in verschiedenen sortierungen und verschiedenen start-end-records zurueckgegeben werden
+
+-create war-file(ant war)

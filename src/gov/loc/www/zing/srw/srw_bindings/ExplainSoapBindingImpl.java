@@ -59,7 +59,7 @@ public class ExplainSoapBindingImpl implements gov.loc.www.zing.srw.interfaces.E
             }
             else { // srw
                 record.setRecordPacking("string");
-                MessageElement elems[]=new MessageElement[1];
+                MessageElement elems[]=new MessageElement[1];                                                //MIH: initialize MessageElement with Text-Object
                 Text t = new Text(db.getExplainRecord());                elems[0]=new MessageElement(t);
                 frag.set_any(elems);
             }
