@@ -30,7 +30,10 @@
         </target>
 
     <target name="jarSRW" depends="compileSRW">
-        <jar jarfile="dist/SRW.jar" basedir="build" includes="gov/**/*.class ORG/oclc/os/SRW/*.class"/>
+    	<!--MIH: also include packages de.fiz.escidoc.* in compilation -->
+        <!--jar jarfile="dist/SRW.jar" basedir="build" includes="gov/**/*.class ORG/oclc/os/SRW/*.class"/-->
+        <jar jarfile="dist/SRW.jar" basedir="build" includes="gov/**/*.class ORG/oclc/os/SRW/*.class de/fiz/escidoc/**/*.class"/>
+    	
         </target>
 
     <target name="compileSRWPears" depends="jarSRW">
