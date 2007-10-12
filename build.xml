@@ -89,7 +89,7 @@
             <zipfileset dir="conf/escidoc" includes="*" excludes="web.xml" prefix="WEB-INF/classes"/>
 
         	<zipfileset dir="conf" includes="*.xsl"/>
-            </jar>
+        </jar>
         <antcall target="addSupportJarsFromSupportLib"/>
         <antcall target="addSupportJarsFromDistributedLib"/>
         <antcall target="addDSpace"/>
@@ -105,8 +105,12 @@
     <target name="addSupportJarsFromDistributedLib">
         <jar jarfile="dist/${webappName}.war" update="true" duplicate="preserve">
             <zipfileset dir="lib" includes="*.jar" prefix="WEB-INF/lib"/>
-            </jar>
-        </target>
+        	
+        	<!--MIH: Add escidoc + SRWLucene-libs -->
+            <zipfileset dir="lib/escidoc" includes="*.jar" prefix="WEB-INF/lib"/>
+            <zipfileset dir="lib/srwlucene" includes="*.jar" prefix="WEB-INF/lib"/>
+        </jar>
+    </target>
 
     <target name="addDSpace" if="dspaceLib">
         <antcall target="compileSRWDSpaceLucene"/>
