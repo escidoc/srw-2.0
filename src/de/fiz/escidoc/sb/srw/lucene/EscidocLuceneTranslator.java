@@ -854,22 +854,22 @@ public class EscidocLuceneTranslator extends LuceneTranslator {
                 else if (relation.equals("<")) {
                     Term term = new Term(index, ctn.getTerm() + modifier);
                     // term is upperbound, exclusive
-                    query = new RangeQuery(null, term, false);
+                    query = new RangeQuery(new Term(term.field(),"0"), term, false);
                 }
                 else if (relation.equals(">")) {
                     Term term = new Term(index, ctn.getTerm() + modifier);
                     // term is lowerbound, exclusive
-                    query = new RangeQuery(term, null, false);
+                    query = new RangeQuery(term, new Term(term.field(),"ZZZZZZZZZZZZZZZ"), false);
                 }
                 else if (relation.equals("<=")) {
                     Term term = new Term(index, ctn.getTerm() + modifier);
                     // term is upperbound, inclusive
-                    query = new RangeQuery(null, term, true);
+                    query = new RangeQuery(new Term(term.field(),"0"), term, true);
                 }
                 else if (relation.equals(">=")) {
                     Term term = new Term(index, ctn.getTerm() + modifier);
                     // term is lowebound, inclusive
-                    query = new RangeQuery(term, null, true);
+                    query = new RangeQuery(term, new Term(term.field(),"ZZZZZZZZZZZZZZZ"), true);
 
                 }
                 else if (relation.equals("<>")) {
