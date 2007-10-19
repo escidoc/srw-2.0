@@ -2,27 +2,39 @@
 
 <project name="SRW" basedir="." default="compile_srw">
 
+	<property name="build.dir" value="build" />
+	<property name="dist.dir" value="dist" />
+	<property name="src.dir" value="src" />
+	<property name="lib.dir" value="lib" />
+	<property name="conf.dir" value="conf" />
+	<property name="escidoc.conf.dir" value="${conf.dir}/escidoc" />
+
     <target name="init">
         <property file="build.properties"/>
-        <mkdir dir="src"/>
-        <mkdir dir="build"/>
-        <mkdir dir="dist"/>
-        </target>
-
+    </target>
+	
     <target name="clean" depends="init" description="Clean all build products.">
-        <delete dir="build"/>
-        <delete dir="dist"/>
-        </target>
+		<delete includeEmptyDirs="true">
+			<fileset dir="${build.dir}">
+				<include name="**/*"/>
+			</fileset>
+		</delete>
+		<delete includeEmptyDirs="true">
+			<fileset dir="${dist.dir}">
+				<include name="**/*"/>
+			</fileset>
+		</delete>
+    </target>
 
-    <target name="compileSRW" depends="init">
+    <target name="compileSRW" depends="clean">
     	
     	<!--MIH: also include packages de.fiz.escidoc.* in compilation -->
         <!--javac srcdir="src" destdir="build" deprecation="true" debug="on"
            includes="gov/**/*.java ORG/oclc/os/SRW/*.java"-->
-		<javac srcdir="src" destdir="build" deprecation="true" debug="on"
+		<javac srcdir="${src.dir}" destdir="${build.dir}" deprecation="true" debug="on"
            includes="gov/**/*.java ORG/oclc/os/SRW/*.java de/fiz/escidoc/**/*.java">
               <classpath>
-                  <fileset dir="lib">
+                  <fileset dir="${lib.dir}">
                       <include name="**/*.jar"/>
                       </fileset>
                   </classpath>
@@ -32,15 +44,15 @@
     <target name="jarSRW" depends="compileSRW">
     	<!--MIH: also include packages de.fiz.escidoc.* in compilation -->
         <!--jar jarfile="dist/SRW.jar" basedir="build" includes="gov/**/*.class ORG/oclc/os/SRW/*.class"/-->
-        <jar jarfile="dist/SRW.jar" basedir="build" includes="gov/**/*.class ORG/oclc/os/SRW/*.class de/fiz/escidoc/**/*.class"/>
+        <jar jarfile="${dist.dir}/SRW.jar" basedir="${build.dir}" includes="gov/**/*.class ORG/oclc/os/SRW/*.class de/fiz/escidoc/**/*.class"/>
     	
         </target>
 
     <target name="compileSRWPears" depends="jarSRW">
-        <javac srcdir="src" destdir="build" deprecation="true" debug="on"
+        <javac srcdir="${src.dir}" destdir="${build.dir}" deprecation="true" debug="on"
           includes="ORG/oclc/os/SRW/Pears/*.java">
             <classpath>
-                <fileset dir="lib">
+                <fileset dir="${lib.dir}">
                     <include name="**/*.jar"/>
                     </fileset>
                 <fileset dir="${pearsLib}">
@@ -48,15 +60,15 @@
                     </fileset>
                 </classpath>
             </javac>
-        <delete file="dist/SRWPears.jar"/>
-        <jar jarfile="dist/SRWPears.jar" basedir="build" includes="ORG/oclc/os/SRW/Pears/*.class"/>
+        <delete file="${dist.dir}/SRWPears.jar"/>
+        <jar jarfile="${dist.dir}/SRWPears.jar" basedir="${build.dir}" includes="ORG/oclc/os/SRW/Pears/*.class"/>
         </target>
 
     <target name="compileSRWDSpaceLucene" depends="jarSRW">
-        <javac srcdir="src" destdir="build" deprecation="true" debug="on"
+        <javac srcdir="${src.dir}" destdir="${build.dir}" deprecation="true" debug="on"
           includes="ORG/oclc/os/SRW/DSpaceLucene/*.java">
             <classpath>
-                <fileset dir="lib">
+                <fileset dir="${lib.dir}">
                     <include name="**/*.jar"/>
                     </fileset>
                 <fileset dir="${dspaceLib}">
@@ -64,31 +76,31 @@
                     </fileset>
                 </classpath>
             </javac>
-        <delete file="dist/SRWDSpaceLucene.jar"/>
-        <jar jarfile="dist/SRWDSpaceLucene.jar" basedir="build" includes="ORG/oclc/os/SRW/DSpaceLucene/*.class"/>
+        <delete file="${dist.dir}/SRWDSpaceLucene.jar"/>
+        <jar jarfile="${dist.dir}/SRWDSpaceLucene.jar" basedir="${build.dir}" includes="ORG/oclc/os/SRW/DSpaceLucene/*.class"/>
         </target>
 
     <target name="checkout" depends="init">
         <cvs cvsRoot=":pserver:anonymous@pubserv.oclc.org:/home/CVS/srw/cvsroot"
-            command="checkout" dest="src" package="all"/>
+            command="checkout" dest="${src.dir}" package="all"/>
         </target>
         
     <target name="war" depends="jarSRW">
         <fail unless="webappName" message="You need to specify a webappName in the build.properties file"/>
-        <delete file="dist/${webappName}.war"/>
-        <jar jarfile="dist/${webappName}.war">
-            <zipfileset dir="dist" includes="SRW.jar" prefix="WEB-INF/lib"/>
+        <delete file="${dist.dir}/${webappName}.war"/>
+        <jar jarfile="${dist.dir}/${webappName}.war">
+            <zipfileset dir="${dist.dir}" includes="SRW.jar" prefix="WEB-INF/lib"/>
 
         	<!--MIH: add web.xml from conf/escidoc-directory -->
         	<!--zipfileset dir="conf" includes="*.wsdd web.xml" prefix="WEB-INF"/-->
-        	<zipfileset dir="conf" includes="*.wsdd" prefix="WEB-INF"/>
-        	<zipfileset dir="conf/escidoc" includes="web.xml" prefix="WEB-INF"/>
+        	<zipfileset dir="${conf.dir}" includes="*.wsdd" prefix="WEB-INF"/>
+        	<zipfileset dir="${escidoc.conf.dir}" includes="web.xml" prefix="WEB-INF"/>
 
         	<!--MIH: Copy all configuration-files for escidoc to WEB-INF/classes -->
             <!--zipfileset dir="conf" includes="SRWServer.props" prefix="WEB-INF/classes"/-->
-            <zipfileset dir="conf/escidoc" includes="*" excludes="web.xml" prefix="WEB-INF/classes"/>
+            <zipfileset dir="${escidoc.conf.dir}" includes="*" excludes="web.xml" prefix="WEB-INF/classes"/>
 
-        	<zipfileset dir="conf" includes="*.xsl"/>
+        	<zipfileset dir="${conf.dir}" includes="*.xsl"/>
         </jar>
         <antcall target="addSupportJarsFromSupportLib"/>
         <antcall target="addSupportJarsFromDistributedLib"/>
@@ -97,33 +109,33 @@
         </target>
 
     <target name="addSupportJarsFromSupportLib" if="supportLib">
-        <jar jarfile="dist/${webappName}.war" update="true">
+        <jar jarfile="${dist.dir}/${webappName}.war" update="true">
             <zipfileset dir="${supportLib}" includes="*.jar" prefix="WEB-INF/lib"/>
             </jar>
         </target>
 
     <target name="addSupportJarsFromDistributedLib">
-        <jar jarfile="dist/${webappName}.war" update="true" duplicate="preserve">
-            <zipfileset dir="lib" includes="*.jar" prefix="WEB-INF/lib"/>
+        <jar jarfile="${dist.dir}/${webappName}.war" update="true" duplicate="preserve">
+            <zipfileset dir="${lib.dir}" includes="*.jar" prefix="WEB-INF/lib"/>
         	
         	<!--MIH: Add escidoc + SRWLucene-libs -->
-            <zipfileset dir="lib/escidoc" includes="*.jar" prefix="WEB-INF/lib"/>
-            <zipfileset dir="lib/srwlucene" includes="*.jar" prefix="WEB-INF/lib"/>
+            <zipfileset dir="${lib.dir}/escidoc" includes="*.jar" prefix="WEB-INF/lib"/>
+            <zipfileset dir="${lib.dir}/srwlucene" includes="*.jar" prefix="WEB-INF/lib"/>
         </jar>
     </target>
 
     <target name="addDSpace" if="dspaceLib">
         <antcall target="compileSRWDSpaceLucene"/>
-        <jar jarfile="dist/${webappName}.war" update="true">
-            <zipfileset dir="dist" includes="*SRWDSpaceLucene.jar" prefix="WEB-INF/lib"/>
+        <jar jarfile="${dist.dir}/${webappName}.war" update="true">
+            <zipfileset dir="${dist.dir}" includes="*SRWDSpaceLucene.jar" prefix="WEB-INF/lib"/>
             <zipfileset dir="${dspaceLib}" includes="*.jar" prefix="WEB-INF/lib"/>
             </jar>
         </target>
 
     <target name="addPears" if="pearsLib">
         <antcall target="compileSRWPears"/>
-        <jar jarfile="dist/${webappName}.war" update="true">
-            <zipfileset dir="dist" includes="*SRWPears.jar" prefix="WEB-INF/lib"/>
+        <jar jarfile="${dist.dir}/${webappName}.war" update="true">
+            <zipfileset dir="${dist.dir}" includes="*SRWPears.jar" prefix="WEB-INF/lib"/>
             <zipfileset dir="${pearsLib}" includes="*.jar" prefix="WEB-INF/lib"/>
             </jar>
         <antcall target="addDbutils"/>
@@ -131,13 +143,13 @@
         </target>
 
     <target name="addDbutils" if="dbutilsLib">
-        <jar jarfile="dist/${webappName}.war" update="true">
+        <jar jarfile="${dist.dir}/${webappName}.war" update="true">
             <zipfileset dir="${dbutilsLib}" includes="Dbutils.jar" prefix="WEB-INF/lib"/>
             </jar>
         </target>
 
     <target name="addGwen" if="gwenLib">
-        <jar jarfile="dist/${webappName}.war" update="true">
+        <jar jarfile="${dist.dir}/${webappName}.war" update="true">
             <zipfileset dir="${gwenLib}" includes="gwen.jar" prefix="WEB-INF/lib"/>
             </jar>
         </target>
@@ -145,7 +157,7 @@
     <target name="deploy" depends="war">
         <fail unless="serverPath" message="You need to specify a serverPath in the build.properties file"/>
         <copy todir="${serverPath}/webapps">
-            <fileset dir="dist" includes="*.war"/>
+            <fileset dir="${dist.dir}" includes="*.war"/>
             </copy>
         </target>
 
@@ -162,8 +174,8 @@
         </target>
 
     <target name="sourcejar" depends="init">
-        <jar jarfile="dist/SRWSource.jar">
-            <zipfileset dir="src" includes="**/*.java" prefix="src"/>
+        <jar jarfile="${dist.dir}/SRWSource.jar">
+            <zipfileset dir="${src.dir}" includes="**/*.java" prefix="src"/>
             </jar>
         </target>
 
@@ -171,7 +183,7 @@
         <mkdir dir="apidoc"/>
         <javadoc packagenames="ORG.oclc.os.SRW.*" destdir="apidoc">
             <sourcepath>
-                <pathelement location="src"/>
+                <pathelement location="${src.dir}"/>
                 </sourcepath>
             </javadoc>
         </target>
