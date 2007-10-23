@@ -40,7 +40,7 @@ public class ExplainSoapBindingImpl implements gov.loc.www.zing.srw.interfaces.E
             if(msgContext.getProperty("sru")!=null)
                 recordPacking="xml"; // default for sru
             else
-                recordPacking="string"; // default for srw
+                recordPacking="string"; // default for srw                        //MIH: always use xml-record-packing            recordPacking="xml";
         }
         if(!recordPacking.equals("xml") &&
           !recordPacking.equals("string")) {
