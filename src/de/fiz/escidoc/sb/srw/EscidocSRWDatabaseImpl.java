@@ -350,6 +350,78 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
     }
 
     /**
+     * returns info about databases for explainPlan.
+     * Overwritten because schema 2.0 doesnt allow 
+     * attribute indentifier in element implementation
+     * 
+     * @return String databaseInfo xml for explainPlan
+     * @sb
+     */
+    public String getDatabaseInfo() {
+        StringBuffer sb=new StringBuffer();
+        sb.append("        <databaseInfo>\n");
+        if(dbProperties!=null) {
+            String t=dbProperties.getProperty("databaseInfo.title");
+            if(t!=null)
+                sb.append("          <title>").append(t).append("</title>\n");
+            t=dbProperties.getProperty("databaseInfo.description");
+            if(t!=null)
+                sb.append("          <description>").append(t).append("</description>\n");
+            t=dbProperties.getProperty("databaseInfo.author");
+            if(t!=null)
+                sb.append("          <author>").append(t).append("</author>\n");
+            t=dbProperties.getProperty("databaseInfo.contact");
+            if(t!=null)
+                sb.append("          <contact>").append(t).append("</contact>\n");
+            t=dbProperties.getProperty("databaseInfo.restrictions");
+            if(t!=null)
+                sb.append("          <restrictions>").append(t).append("</restrictions>\n");
+        }
+        sb.append("          <implementation version='1.1'>\n");
+        sb.append("            <title>OCLC Research SRW Server version 1.1</title>\n");
+        sb.append("            </implementation>\n");
+        sb.append("          </databaseInfo>\n");
+        return sb.toString();
+    }
+
+
+    /**
+     * returns info about metaInfo for explainPlan.
+     * Overwritten because schema 2.0 needs attribute dateModified
+     * if element metaInfo is set. 
+     * 
+     * @return String databaseInfo xml for explainPlan
+     * @sb
+     */
+    public String getMetaInfo() {
+        StringBuffer sb=new StringBuffer();
+        boolean writeElement = false;
+        sb.append("        <metaInfo>\n");
+        if(dbProperties!=null) {
+            String t=dbProperties.getProperty("metaInfo.dateModified");
+            if(t!=null) {
+                sb.append("          <dateModified>").append(t).append("</dateModified>\n");
+                writeElement = true;
+            }
+            t=dbProperties.getProperty("metaInfo.aggregatedFrom");
+            if(t!=null) {
+                sb.append("          <aggregatedFrom>").append(t).append("</aggregatedFrom>\n");
+            }
+            t=dbProperties.getProperty("metaInfo.dateAggregated");
+            if(t!=null) {
+                sb.append("          <dateAggregated>").append(t).append("</dateAggregated>\n");
+            }
+        }
+        sb.append("          </metaInfo>\n");
+        if (writeElement) {
+            return sb.toString();
+        } else {
+            return "";
+        }
+    }
+
+
+    /**
      * returns info about indices in this database for explainPlan. Dynamically
      * reads all fields from lucene-index and appends them to the explainPlan if
      * prefix of fieldName (string that ends with a dot) is defined as
