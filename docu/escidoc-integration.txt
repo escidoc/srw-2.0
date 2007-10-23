@@ -8,7 +8,9 @@
 	modify method processWsdlRequest(): call getWsdl() and not engine.generateWSDL(msgContext);
 	patch Method getSoapAction(HttpServletRequest req), dont throw an AxisFault when SOAPAction Header is missing
 -modify gov.loc.www.zing.srw.srw_bindings.ExplainSoapBindingImpl
-	modify Method explainOperation: if recordPacking=string, initialize MessageElement with Text-Object 
+	modify Method explainOperation: 
+	-always use xml-recordPacking
+	-if recordPacking=string, initialize MessageElement with Text-Object 
 	Text t = new Text(db.getExplainRecord());
   elems[0]=new MessageElement(t);
 
