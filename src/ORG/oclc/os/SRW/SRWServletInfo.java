@@ -174,6 +174,8 @@ public class SRWServletInfo {
             writer.write("    <SRW:recordSchema>http://explain.z3950.org/dtd/2.0/</SRW:recordSchema>\n");
             writer.write("    <SRW:recordPacking>"+recordPacking+"</SRW:recordPacking>\n");
             writer.write("    <SRW:recordData>\n");
+            //MIH avoid caching
+            db.makeExplainRecord(request);
             String explainRecord=db.getExplainRecord();
             if(explainRecord==null) {
                 db.makeExplainRecord(request);
