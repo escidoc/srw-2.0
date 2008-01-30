@@ -63,10 +63,6 @@ public class SimpleHighlighter implements SrwHighlighter {
     public static final String PROPERTY_HIGHLIGHT_TERM_FULLTEXT =
         "cqlTranslator.highlightTermFulltext";
 
-    private static final int DEFAULT_HIGHLIGHT_FRAGMENT_SIZE = 100;
-
-    private static final int DEFAULT_HIGHLIGHT_MAX_FRAGMENTS = 4;
-
     private Highlighter highlighter = null;
 
     private Analyzer analyzer = new SimpleAnalyzer();
@@ -77,9 +73,9 @@ public class SimpleHighlighter implements SrwHighlighter {
 
     private String highlightFragmentSeparator = "...";
 
-    private int highlightFragmentSize = DEFAULT_HIGHLIGHT_FRAGMENT_SIZE;
+    private int highlightFragmentSize = 100;
 
-    private int highlightMaxFragments = DEFAULT_HIGHLIGHT_MAX_FRAGMENTS;
+    private int highlightMaxFragments = 4;
 
     private String highlightFulltextField = null;
 
@@ -174,7 +170,9 @@ public class SimpleHighlighter implements SrwHighlighter {
 
     /**
      * Gets all highlight-snippets for the given lucene-document and returns it
-     * as string.
+     * as string (xml).
+     * xml-structure: 
+     * <namespacePrefix:highlight>highlightData</namespacePrefix:highlight>
      * 
      * @param doc
      *            lucene-document

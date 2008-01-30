@@ -71,6 +71,8 @@ public interface SrwHighlighter {
     /**
      * Gets all highlight-snippets for the given lucene-document and returns it
      * as string (possibly xml).
+     * xml-structure: 
+     * <namespacePrefix:highlight>highlightData</namespacePrefix:highlight>
      * 
      * @param doc
      *            lucene-document

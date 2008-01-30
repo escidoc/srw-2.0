@@ -32,6 +32,7 @@ package de.fiz.escidoc.sb.srw.lucene.highlighting;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -40,7 +41,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.SimpleAnalyzer;
 import org.apache.lucene.analysis.TokenStream;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
@@ -60,7 +60,8 @@ import org.apache.lucene.store.FSDirectory;
  */
 public class EscidocHighlighter implements SrwHighlighter {
 
-    public static final String PROPERTY_ANALYZER = "cqlTranslator.analyzer";
+    //*************Variables from properties-file****************************
+	public static final String PROPERTY_ANALYZER = "cqlTranslator.analyzer";
 
     public static final String PROPERTY_HIGHLIGHT_TERM_FULLTEXT =
         "cqlTranslator.highlightTermFulltext";
@@ -103,11 +104,9 @@ public class EscidocHighlighter implements SrwHighlighter {
 
     public static final String PROPERTY_HIGHLIGHTER =
         "cqlTranslator.highlighterClass";
-    
-    private static final int DEFAULT_HIGHLIGHT_FRAGMENT_SIZE = 100;
+    //*************************************************************************
 
-    private static final int DEFAULT_HIGHLIGHT_MAX_FRAGMENTS = 4;
-
+    //********Defaults*********************************************************
     private Highlighter highlighter = null;
 
     private Analyzer analyzer = new SimpleAnalyzer();
@@ -118,9 +117,9 @@ public class EscidocHighlighter implements SrwHighlighter {
 
     private String highlightFragmentSeparator = "...";
 
-    private int highlightFragmentSize = DEFAULT_HIGHLIGHT_FRAGMENT_SIZE;
+    private int highlightFragmentSize = 100;
 
-    private int highlightMaxFragments = DEFAULT_HIGHLIGHT_MAX_FRAGMENTS;
+    private int highlightMaxFragments = 4;
 
     private String fulltextIndexField = null;
 
@@ -133,8 +132,9 @@ public class EscidocHighlighter implements SrwHighlighter {
     private String highlightMetadataField = null;
 
     private String highlightMetadataFieldIterable = "false";
+    //*************************************************************************
 
-    private HashMap searchFields = new HashMap();
+    private HashSet<String> searchFields = new HashSet<String>();
 
     private static Log log = LogFactory.getLog(EscidocHighlighter.class);
 
@@ -156,7 +156,6 @@ public class EscidocHighlighter implements SrwHighlighter {
             }
             catch (Exception e) {
                 log.error(e);
-                analyzer = new StandardAnalyzer();
             }
         }
         temp = (String) props.get(PROPERTY_HIGHLIGHT_START_MARKER);
@@ -237,16 +236,21 @@ public class EscidocHighlighter implements SrwHighlighter {
         if (indexPath != null && indexPath.trim().length() != 0
             && query != null) {
             // get search-fields from query////////////////////////////////////
-            searchFields.put("metadata", "");
+        	// always highlight stored metadata
+            searchFields.add("metadata");
+            
+            // maybe highlight stored fulltext
             if (fulltextIndexField != null
                 && fulltextIndexField.trim().length() != 0) {
                 String queryString = query.toString();
                 if (queryString.matches(".*" + fulltextIndexField + ".*")) {
-                    searchFields.put("fulltext", "");
+                    searchFields.add("fulltext");
                 }
             }
             // ////////////////////////////////////////////////////////////////
 
+            // Initialize Highlighter with query, highlight-start + end marker
+            // and highlightFragmentSize
             Directory directory = null;
             IndexReader reader = null;
             try {
@@ -291,6 +295,8 @@ public class EscidocHighlighter implements SrwHighlighter {
     /**
      * Gets all highlight-snippets for the given lucene-document and returns it
      * as xml.
+     * xml-structure: 
+     * <namespacePrefix:highlight>highlightData</namespacePrefix:highlight>
      * 
      * @param doc
      *            lucene-document
@@ -308,12 +314,12 @@ public class EscidocHighlighter implements SrwHighlighter {
         if (highlighter == null) {
             return "";
         }
-        HashMap highlightFragmentData = null;
+        HashMap<String, String> highlightFragmentData = null;
         HighlightXmlizer highlightXmlizer =
             new HighlightXmlizer(highlightFragmentSeparator,
                 highlightStartMarker, highlightEndMarker);
         // If search-field was fulltext, highlight fulltext/////////
-        if (searchFields.get("fulltext") != null
+        if (searchFields.contains("fulltext")
             && highlightFulltextField != null
             && highlightFulltextField.trim().length() != 0) {
             if (highlightFulltextFieldIterable.equalsIgnoreCase("false")) {
@@ -354,7 +360,7 @@ public class EscidocHighlighter implements SrwHighlighter {
         }
         // /////////////////////////////////////////////////////////
         // If search-field was metadata, highlight metadata/////////
-        if (searchFields.get("metadata") != null
+        if (searchFields.contains("metadata")
             && highlightMetadataField != null
             && highlightMetadataField.trim().length() != 0) {
             if (highlightMetadataFieldIterable.equalsIgnoreCase("false")) {
@@ -394,7 +400,7 @@ public class EscidocHighlighter implements SrwHighlighter {
         }
         // /////////////////////////////////////////////////////////
         // If search-field was properties, highlight properties/////////
-        // if (searchFields.get("properties") != null) {
+        // if (searchFields.contains("properties")) {
         // try {
         // highlightFragmentData = getHighlightData(
         // highlightTermMetadata, null, doc, highlighter, "properties");
@@ -432,15 +438,16 @@ public class EscidocHighlighter implements SrwHighlighter {
      * 
      * @sb
      */
-    private HashMap getHighlightData(
+    private HashMap<String, String> getHighlightData(
         final String fieldName, final String locatorFieldName,
         final Document doc, final Highlighter highlighterIn, final String type)
         throws IOException, NoSuchFieldException {
-        HashMap highlightData = new HashMap();
+        HashMap<String, String> highlightData = new HashMap<String, String>();
         highlightData.put("type", type);
         String highlightSnippet = null;
 
-        // Get text of all Fields with name <fieldName>/////////////////////////
+        // Get text of all Fields with name <fieldName>////////////////////////
+        // and concatenate then with highlightFragmentSeparator////////////////
         StringBuffer fieldValues = new StringBuffer("");
         Field[] fields = doc.getFields(fieldName);
         if (fields != null && fields.length > 0) {
