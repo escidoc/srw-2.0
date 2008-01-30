@@ -32,7 +32,7 @@
         <!--javac srcdir="src" destdir="build" deprecation="true" debug="on"
            includes="gov/**/*.java ORG/oclc/os/SRW/*.java"-->
 		<javac srcdir="${src.dir}" destdir="${build.dir}" deprecation="true" debug="on"
-           includes="gov/**/*.java ORG/oclc/os/SRW/*.java de/fiz/escidoc/**/*.java">
+           includes="gov/**/*.java ORG/oclc/os/SRW/*.java de/escidoc/**/*.java">
               <classpath>
                   <fileset dir="${lib.dir}">
                       <include name="**/*.jar"/>
@@ -44,7 +44,7 @@
     <target name="jarSRW" depends="compileSRW">
     	<!--MIH: also include packages de.escidoc.* in compilation -->
         <!--jar jarfile="dist/SRW.jar" basedir="build" includes="gov/**/*.class ORG/oclc/os/SRW/*.class"/-->
-        <jar jarfile="${dist.dir}/SRW.jar" basedir="${build.dir}" includes="gov/**/*.class ORG/oclc/os/SRW/*.class de/fiz/escidoc/**/*.class"/>
+        <jar jarfile="${dist.dir}/SRW.jar" basedir="${build.dir}" includes="gov/**/*.class ORG/oclc/os/SRW/*.class de/escidoc/**/*.class"/>
     	
         </target>
 
