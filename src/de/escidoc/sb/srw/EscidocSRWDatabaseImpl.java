@@ -27,7 +27,7 @@
  * All rights reserved.  Use is subject to license terms.
  */
 
-package de.fiz.escidoc.sb.srw;
+package de.escidoc.sb.srw;
 
 import gov.loc.www.zing.srw.ExtraDataType;
 import gov.loc.www.zing.srw.RecordType;
@@ -66,7 +66,7 @@ import org.z3950.zing.cql.CQLParseException;
 import ORG.oclc.os.SRW.Record;
 import ORG.oclc.os.SRW.RecordIterator;
 import ORG.oclc.os.SRW.SRWDiagnostic;
-import de.fiz.escidoc.sb.srw.lucene.EscidocLuceneTranslator;
+import de.escidoc.sb.srw.lucene.EscidocLuceneTranslator;
 
 /**
  * Class overwrites org.osuosl.srw.SRWDatabaseImpl. This is done because: -we

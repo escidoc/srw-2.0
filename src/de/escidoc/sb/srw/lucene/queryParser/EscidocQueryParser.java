@@ -27,7 +27,7 @@
  * All rights reserved.  Use is subject to license terms.
  */
 
-package de.fiz.escidoc.sb.srw.lucene.queryParser;
+package de.escidoc.sb.srw.lucene.queryParser;
 
 import java.io.IOException;
 import java.io.StringReader;

@@ -27,7 +27,7 @@
  * All rights reserved.  Use is subject to license terms.
  */
 
-package de.fiz.escidoc.sb.srw;
+package de.escidoc.sb.srw;
 
 import gov.loc.www.zing.srw.ExtraDataType;
 

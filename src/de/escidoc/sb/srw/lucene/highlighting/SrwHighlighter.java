@@ -27,7 +27,7 @@
  * All rights reserved.  Use is subject to license terms.
  */
 
-package de.fiz.escidoc.sb.srw.lucene.highlighting;
+package de.escidoc.sb.srw.lucene.highlighting;
 
 import java.util.Properties;
 

@@ -27,7 +27,7 @@
  * All rights reserved.  Use is subject to license terms.
  */
 
-package de.fiz.escidoc.sb.srw.lucene;
+package de.escidoc.sb.srw.lucene;
 
 import gov.loc.www.zing.srw.ExtraDataType;
 import gov.loc.www.zing.srw.SearchRetrieveRequestType;
@@ -78,8 +78,8 @@ import org.z3950.zing.cql.CQLOrNode;
 import org.z3950.zing.cql.CQLTermNode;
 
 import ORG.oclc.os.SRW.QueryResult;
-import de.fiz.escidoc.sb.srw.lucene.highlighting.SrwHighlighter;
-import de.fiz.escidoc.sb.srw.lucene.queryParser.EscidocQueryParser;
+import de.escidoc.sb.srw.lucene.highlighting.SrwHighlighter;
+import de.escidoc.sb.srw.lucene.queryParser.EscidocQueryParser;
 
 /**
  * Class overwrites org.osuosl.srw.lucene.LuceneTranslator. This is done
