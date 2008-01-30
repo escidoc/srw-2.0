@@ -19,10 +19,10 @@
 
 -include SRWLucene.jar + dependant libs in lib-Directory (subdirectory srwlucene).
 -include properties-files for escidoc (Dir conf/escidoc)
--include class-packages de.fiz.escidoc... + dependant libs in lib-Directory (subdirectory escidoc).
+-include class-packages de.escidoc... + dependant libs in lib-Directory (subdirectory escidoc).
 -include AxisServlet in web.xml!!
 -edit build.xml, target war to copy log4j.xml and all escidoc .properties-files in directory WEB-INF/classes
--edit build.xml, target compileSRW to also compile packages de.fiz.escidoc
+-edit build.xml, target compileSRW to also compile packages de.escidoc
 -edit build.properties to change name of war-file
 -run build/war (url of service is dependant on name of war-file!!!)
 
@@ -50,7 +50,7 @@
 	Because of axis-problems, we had to overwrite 2 fedora-type-classes that
 	are normally in client.jar, package fedora.server.types.gen.
 	we deleted the methods getSerializer() and getDeserializer() and put these classses
-	into the package de.fiz.escidoc.om.business.fedora.types.
+	into the package de.escidoc.core.om.business.fedora.types.
 
 All configuration-files, additional jar-files and own-implemented java-classes 
 for SRWServer + fedoragsearch are in component sb.
@@ -72,18 +72,18 @@ lucene-snowball.jar
 
 additional classes:
 SRWServer:
-de.fiz.escidoc.sb.lucene.analyzer.EscidocAnalyzer.java
-de.fiz.escidoc.sb.lucene.analyzer.EscidocGermanAnalyzer.java
-de.fiz.escidoc.sb.lucene.analyzer.EscidocEnglishAnalyzer.java
-de.fiz.escidoc.sb.srw.EscidocRecordResolver.java
-de.fiz.escidoc.sb.srw.EscidocSRWDatabaseImpl.java
-de.fiz.escidoc.sb.srw.lucene.EscidocLuceneTranslator.java
+de.escidoc.sb.lucene.analyzer.EscidocAnalyzer.java
+de.escidoc.sb.lucene.analyzer.EscidocGermanAnalyzer.java
+de.escidoc.sb.lucene.analyzer.EscidocEnglishAnalyzer.java
+de.escidoc.sb.srw.EscidocRecordResolver.java
+de.escidoc.sb.srw.EscidocSRWDatabaseImpl.java
+de.escidoc.sb.srw.lucene.EscidocLuceneTranslator.java
 
 fedoragsearch:
-de.fiz.escidoc.sb.lucene.analyzer.EscidocAnalyzer.java
-de.fiz.escidoc.sb.xslt.ComponentAccessor.java
-de.fiz.escidoc.om.business.fedora.types.MIMETypedStream.java
-de.fiz.escidoc.om.business.fedora.types.Property.java
+de.escidoc.sb.lucene.analyzer.EscidocAnalyzer.java
+de.escidoc.sb.xslt.ComponentAccessor.java
+de.escidoc.om.business.fedora.types.MIMETypedStream.java
+de.escidoc.om.business.fedora.types.Property.java
 
 SRWServer:
 	-write own RecordResolver that implements org.osuosl.srw.RecordResolver

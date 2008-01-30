@@ -45,15 +45,15 @@ extension.restrictorSummary.namespace=info:srw/extension/5/restrictorSummary
 # 
 
 #ESCIDOC Lucene database with all languages, unstemmed configuration
-db.escidoc_all.class=de.fiz.escidoc.sb.srw.EscidocSRWDatabaseImpl
+db.escidoc_all.class=de.escidoc.sb.srw.EscidocSRWDatabaseImpl
 db.escidoc_all.configuration=escidoc_all.SRWDatabase.properties
 
 #ESCIDOC Lucene database with english stemmed language
-db.escidoc_en.class=de.fiz.escidoc.sb.srw.EscidocSRWDatabaseImpl
+db.escidoc_en.class=de.escidoc.sb.srw.EscidocSRWDatabaseImpl
 db.escidoc_en.configuration=escidoc_en.SRWDatabase.properties
 
 #ESCIDOC Lucene database with german stemmed language
-db.escidoc_de.class=de.fiz.escidoc.sb.srw.EscidocSRWDatabaseImpl
+db.escidoc_de.class=de.escidoc.sb.srw.EscidocSRWDatabaseImpl
 db.escidoc_de.configuration=escidoc_de.SRWDatabase.properties
 
 db.DSpace.class=ORG.oclc.os.SRW.DSpaceLucene.SRWLuceneDatabase

@@ -32,12 +32,12 @@
     <appender-ref ref="FILEOUT"/>
   </logger>
   
-  <logger name="de.fiz.escidoc.sb.srw" additivity="false">
+  <logger name="de.escidoc.sb.srw" additivity="false">
     <level value="INFO" />
     <appender-ref ref="FILEOUT"/>
   </logger>
   
-  <logger name="de.fiz.escidoc.sb.lucene" additivity="false">
+  <logger name="de.escidoc.sb.lucene" additivity="false">
     <level value="INFO" />
     <appender-ref ref="FILEOUT"/>
   </logger>
