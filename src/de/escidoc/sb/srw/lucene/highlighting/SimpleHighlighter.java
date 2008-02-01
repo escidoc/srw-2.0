@@ -130,7 +130,7 @@ public class SimpleHighlighter implements SrwHighlighter {
             Directory directory = null;
             IndexReader reader = null;
             try {
-                directory = FSDirectory.getDirectory(indexPath, false);
+                directory = FSDirectory.getDirectory(indexPath);
                 reader = IndexReader.open(directory);
                 replacedQuery = query.rewrite(reader);
                 // Initialize Highlighter with formatter and scorer
