@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -331,8 +332,8 @@ public class EscidocLuceneTranslator extends LuceneTranslator {
             // rewrite query to analyzed query
             QueryParser parser =
                 new EscidocQueryParser(getDefaultIndexField(), analyzer);
-            String queryString = escapeBackslash(unanalyzedQuery.toString());
-            Query query = parser.parse(queryString);
+//            String queryString = escapeBackslash(unanalyzedQuery.toString());
+            Query query = parser.parse(unanalyzedQuery.toString());
 
             log.info("escidoc lucene search=" + query);
 
@@ -659,11 +660,13 @@ public class EscidocLuceneTranslator extends LuceneTranslator {
             idFieldStr = idField.stringValue();
         }
         if (idFieldStr != null && idFieldStr.trim().length() != 0) {
-            idFieldStr = StringEscapeUtils.unescapeXml(idFieldStr);
+        	if (idFieldStr.trim().startsWith("&")) {
+                idFieldStr = StringEscapeUtils.unescapeXml(idFieldStr);
+        	}
             if (highlighter != null) {
-                String nsName = idFieldStr.replaceAll("\\s+", "");
-                Pattern pattern = Pattern.compile("<([^>]*?):");
-                Matcher matcher = pattern.matcher(nsName);
+                String nsName;
+                Pattern pattern = Pattern.compile("(?s)<([^>]*?):");
+                Matcher matcher = pattern.matcher(idFieldStr);
                 if (matcher.find()) {
                     nsName = matcher.group(1);
                 }
@@ -673,7 +676,7 @@ public class EscidocLuceneTranslator extends LuceneTranslator {
                 String highlight = highlighter.getFragments(doc, nsName);
                 if (highlight != null && !highlight.equals("")) {
                     idFieldStr =
-                        idFieldStr.replaceFirst("(<\\s*[^\\?]*?>)", "$1"
+                        idFieldStr.replaceFirst("(?s)(<\\s*[^\\?]*?>)", "$1"
                             + highlight);
                 }
             }
@@ -685,7 +688,7 @@ public class EscidocLuceneTranslator extends LuceneTranslator {
      * Recreates CQLTermNode by analyzing all Terms with analyzer This only
      * works if Analyzer uses WhitespaceTokenizer!! this is done because
      * cql.serverChoice gets replaced with defaultIndexField. Afterwards
-     * indexFields has to get analyzed Additionally replaces fieldname
+     * indexFields has to get analyzed. Additionally replaces fieldname
      * cql.serverChoice (this is the case if user gives no field name) with the
      * defaultFieldName from configuration
      * 
@@ -762,7 +765,9 @@ public class EscidocLuceneTranslator extends LuceneTranslator {
     }
 
     /**
-     * special characters that Lucene requires to escape: // + && || ! ( ) { } [ ] ^ " ~ ? : \ - *
+     * special characters that Lucene requires to escape: + - ! ( ) { } [ ] ^ " ~ * ? : \
+     * cql already escaped *,?,",\ and ^
+     * so escape the rest.
      * 
      * @param text
      *            Umzuwandelnde Zeichenkette
@@ -771,48 +776,50 @@ public class EscidocLuceneTranslator extends LuceneTranslator {
     public static String escapeSpecialCharacters(final String text) {
         String replacedText = text;
         replacedText = " " + replacedText;
-        replacedText = StringUtils.replace(replacedText, "&", "\\&");
+        replacedText = StringUtils.replace(replacedText, "+", "\\+");
+        replacedText = StringUtils.replace(replacedText, "-", "\\-");
         replacedText = StringUtils.replace(replacedText, "!", "\\!");
+        replacedText = StringUtils.replace(replacedText, "(", "\\(");
+        replacedText = StringUtils.replace(replacedText, ")", "\\)");
         replacedText = StringUtils.replace(replacedText, "{", "\\{");
         replacedText = StringUtils.replace(replacedText, "}", "\\}");
-        replacedText = StringUtils.replace(replacedText, ":", "\\:");
         replacedText = StringUtils.replace(replacedText, "[", "\\[");
         replacedText = StringUtils.replace(replacedText, "]", "\\]");
-        replacedText = StringUtils.replace(replacedText, "\"", "\\\"");
-        replacedText = StringUtils.replace(replacedText, "|", "\\|");
+        replacedText = StringUtils.replace(replacedText, "~", "\\~");
+        replacedText = StringUtils.replace(replacedText, ":", "\\:");
         return replacedText.substring(1);
     }
 
-    protected static String escapeBackslash(String s)
-    {
-        boolean changed = false;
-        StringBuffer sb = null;
-        for(int i = 0; i < s.length(); i++)
-        {
-            char c = s.charAt(i);
-            if(c == '\\')
-            {
-                if(!changed)
-                {
-                    if(i > 0)
-                        sb = new StringBuffer(s.substring(0, i));
-                    else
-                        sb = new StringBuffer();
-                    changed = true;
-                }
-                sb.append("\\\\");
-                continue;
-            }
-            if(changed)
-                sb.append(c);
-        }
-
-        if(!changed)
-            return s;
-        else
-            return sb.toString();
-    }
-
+//    protected static String escapeBackslash(String s)
+//    {
+//        boolean changed = false;
+//        StringBuffer sb = null;
+//        for(int i = 0; i < s.length(); i++)
+//        {
+//            char c = s.charAt(i);
+//            if(c == '\\')
+//            {
+//                if(!changed)
+//                {
+//                    if(i > 0)
+//                        sb = new StringBuffer(s.substring(0, i));
+//                    else
+//                        sb = new StringBuffer();
+//                    changed = true;
+//                }
+//                sb.append("\\\\");
+//                continue;
+//            }
+//            if(changed)
+//                sb.append(c);
+//        }
+//
+//        if(!changed)
+//            return s;
+//        else
+//            return sb.toString();
+//    }
+//
     /**
      * Copied Method from LuceneTranslator.
      * 
