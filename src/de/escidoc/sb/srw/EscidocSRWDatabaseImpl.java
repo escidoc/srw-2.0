@@ -193,8 +193,11 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
             }
 
             CQLNode queryRoot = null;
+            if (query.matches(".*[^\\\\]\".*")) {
+            	query = escapeBackslash(query);
+            }
             try {
-                queryRoot = parser.parse(escapeBackslash(query));
+                queryRoot = parser.parse(query);
             }
             catch (CQLParseException e) {
                 return diagnostic(SRWDiagnostic.QuerySyntaxError, e
