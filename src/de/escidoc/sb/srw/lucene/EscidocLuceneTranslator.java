@@ -332,7 +332,6 @@ public class EscidocLuceneTranslator extends LuceneTranslator {
             // rewrite query to analyzed query
             QueryParser parser =
                 new EscidocQueryParser(getDefaultIndexField(), analyzer);
-//            String queryString = escapeBackslash(unanalyzedQuery.toString());
             Query query = parser.parse(unanalyzedQuery.toString());
 
             log.info("escidoc lucene search=" + query);
@@ -790,36 +789,6 @@ public class EscidocLuceneTranslator extends LuceneTranslator {
         return replacedText.substring(1);
     }
 
-//    protected static String escapeBackslash(String s)
-//    {
-//        boolean changed = false;
-//        StringBuffer sb = null;
-//        for(int i = 0; i < s.length(); i++)
-//        {
-//            char c = s.charAt(i);
-//            if(c == '\\')
-//            {
-//                if(!changed)
-//                {
-//                    if(i > 0)
-//                        sb = new StringBuffer(s.substring(0, i));
-//                    else
-//                        sb = new StringBuffer();
-//                    changed = true;
-//                }
-//                sb.append("\\\\");
-//                continue;
-//            }
-//            if(changed)
-//                sb.append(c);
-//        }
-//
-//        if(!changed)
-//            return s;
-//        else
-//            return sb.toString();
-//    }
-//
     /**
      * Copied Method from LuceneTranslator.
      * 
