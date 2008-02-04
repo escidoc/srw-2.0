@@ -193,6 +193,10 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
             }
 
             CQLNode queryRoot = null;
+            //MIH: Workaround because CQLParser has Bug when handling \"
+            //delete \"
+            query = query.replaceAll("\\\\\"", "");
+            
             if (query.matches(".*[^\\\\]\".*")) {
             	query = escapeBackslash(query);
             }
