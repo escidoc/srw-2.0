@@ -56,3 +56,7 @@ db.escidoc_en.configuration=escidoc_en.SRWDatabase.properties
 db.escidoc_de.class=de.escidoc.sb.srw.EscidocSRWDatabaseImpl
 db.escidoc_de.configuration=escidoc_de.SRWDatabase.properties
 
+#ESCIDOC test for simple highlighting
+db.escidoc_simple-highlighting.class=de.escidoc.sb.srw.EscidocSRWDatabaseImpl
+db.escidoc_simple-highlighting.configuration=escidoc_simple-highlighting.SRWDatabase.properties
+
