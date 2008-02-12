@@ -43,7 +43,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,6 +66,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.RangeQuery;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortComparatorSource;
 import org.apache.lucene.search.SortField;
 import org.osuosl.srw.ResolvingQueryResult;
 import org.osuosl.srw.SRWDiagnostic;
@@ -81,6 +81,7 @@ import org.z3950.zing.cql.CQLTermNode;
 import ORG.oclc.os.SRW.QueryResult;
 import de.escidoc.sb.srw.lucene.highlighting.SrwHighlighter;
 import de.escidoc.sb.srw.lucene.queryParser.EscidocQueryParser;
+import de.escidoc.sb.srw.lucene.sorting.EscidocSearchResultComparator;
 
 /**
  * Class overwrites org.osuosl.srw.lucene.LuceneTranslator. This is done
@@ -104,6 +105,9 @@ public class EscidocLuceneTranslator extends LuceneTranslator {
 
     public static final String PROPERTY_HIGHLIGHTER =
         "cqlTranslator.highlighterClass";
+
+    public static final String PROPERTY_COMPARATOR =
+        "cqlTranslator.sortComparator";
 
     public static final int BOOLEAN_MAX_CLAUSE_COUNT = 1000000;
 
@@ -156,6 +160,7 @@ public class EscidocLuceneTranslator extends LuceneTranslator {
 
     /**
      * Analyzer. Is static because it is used in overwritten static method
+     * Default: StandardAnalyzer
      */
     private Analyzer analyzer;
 
@@ -172,6 +177,26 @@ public class EscidocLuceneTranslator extends LuceneTranslator {
      */
     public void setAnalyzer(final Analyzer inp) {
         analyzer = inp;
+    }
+
+    /**
+     * Comparator for custom sorting of search-result.
+     * Default: EscidocSearchResultComparator
+     */
+    private SortComparatorSource comparator;
+
+    /**
+     * @return String comparator.
+     */
+    public SortComparatorSource getComparator() {
+        return comparator;
+    }
+
+    /**
+     * @param inp comparator.
+     */
+    public void setComparator(final SortComparatorSource inp) {
+    	comparator = inp;
     }
 
     /**
@@ -263,6 +288,17 @@ public class EscidocLuceneTranslator extends LuceneTranslator {
             catch (Exception e) {
                 log.error(e);
                 analyzer = new StandardAnalyzer();
+            }
+        }
+
+        temp = (String) properties.get(PROPERTY_COMPARATOR);
+        if (temp != null && temp.trim().length() != 0) {
+            try {
+                comparator = (SortComparatorSource) Class.forName(temp).newInstance();
+            }
+            catch (Exception e) {
+                log.error(e);
+                comparator = new EscidocSearchResultComparator();
             }
         }
 
@@ -750,10 +786,18 @@ public class EscidocLuceneTranslator extends LuceneTranslator {
                 String[] sortPart = sortField.split(",");
                 if (sortPart != null && sortPart.length > 0) {
                     if (sortPart.length > 2 && sortPart[2].equals("0")) {
-                        sortFieldArr[i] = new SortField(sortPart[0], true);
+                    	if (comparator == null) {
+                            sortFieldArr[i] = new SortField(sortPart[0], true);
+                    	} else {
+                            sortFieldArr[i] = new SortField(sortPart[0], comparator, true);
+                    	}
                     }
                     else {
-                        sortFieldArr[i] = new SortField(sortPart[0]);
+                    	if (comparator == null) {
+                            sortFieldArr[i] = new SortField(sortPart[0]);
+                    	} else {
+                            sortFieldArr[i] = new SortField(sortPart[0], comparator);
+                    	}
                     }
                     i++;
                 }
