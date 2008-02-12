@@ -475,7 +475,6 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
         StringBuffer sb = new StringBuffer("");
         StringTokenizer st;
         HashMap contextSets = new HashMap();
-        String sortSet = dbProperties.getProperty("sortSet");
         while (enumer.hasMoreElements()) {
             prop = (String) enumer.nextElement();
             // MIH: extract contextSetName
@@ -510,8 +509,10 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
                         "            </index>\n");
             }
         }
-        Collection fieldList =
-            ((EscidocLuceneTranslator) getCQLTranslator()).getFieldList();
+        
+        //Get index fields
+        Collection<String> fieldList =
+            ((EscidocLuceneTranslator) getCQLTranslator()).getIndexedFieldList();
         indexSet = null;
         index = null;
         if (fieldList != null) {
@@ -543,12 +544,15 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
                                 "              </map>\n").append(
                                 "            </index>\n");
                     }
-                    if (sortSet != null && !sortSet.equals("")
-                        && sortSet.equals(parts[0])) {
-                        sortKeywords.append("          <sortKeyword>").append(
-                            fieldName).append("</sortKeyword>\n");
-                    }
                 }
+            }
+            
+            //Get sort Fields
+            fieldList =
+                ((EscidocLuceneTranslator) getCQLTranslator()).getStoredFieldList();
+            for (String fieldName : fieldList) {
+                sortKeywords.append("          <sortKeyword>").append(
+                        fieldName).append("</sortKeyword>\n");
             }
             if (sortKeywords.length() > 0) {
                 sb.append(sortKeywords);

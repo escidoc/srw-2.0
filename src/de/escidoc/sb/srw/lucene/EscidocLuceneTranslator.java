@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -61,6 +62,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.FieldDoc;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -610,18 +612,67 @@ public class EscidocLuceneTranslator extends LuceneTranslator {
     }
 
     /**
-     * Returns a list of all FieldNames currently in lucene-index.
+     * Returns a list of all FieldNames currently in lucene-index
+     * that are indexed.
      * 
      * @return Collection all FieldNames currently in lucene-index
+     * that are indexed.
      * 
      * @sb
      */
-    public Collection getFieldList() {
-        Collection fieldList = new ArrayList();
+    public Collection<String> getIndexedFieldList() {
+        Collection<String> fieldList = new ArrayList<String>();
         IndexReader reader = null;
         try {
             reader = IndexReader.open(getIndexPath());
             fieldList = reader.getFieldNames(FieldOption.INDEXED);
+        }
+        catch (Exception e) {
+            log.error(e);
+        }
+        finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                }
+                catch (IOException e) {
+                    log.error("Exception while closing lucene index reader", e);
+                }
+                reader = null;
+            }
+        }
+        return fieldList;
+    }
+
+    /**
+     * Returns a list of all FieldNames currently in lucene-index
+     * that are stored.
+     * 
+     * @return Collection all FieldNames currently in lucene-index
+     * that are stored
+     * 
+     * @sb
+     */
+    public Collection<String> getStoredFieldList() {
+        Collection<String> fieldList = new ArrayList<String>();
+        IndexReader reader = null;
+        try {
+            reader = IndexReader.open(getIndexPath());
+            //Hack, because its not possible to get all stored fields
+            //of an index
+            for (int i = 0; i < 10 ; i++) {
+            	try {
+                	Document doc = reader.document(i);
+                	List<Field> fields = doc.getFields();
+                	for (Field field : fields) {
+                		if (field.isStored() && !fieldList.contains(field.name())) {
+                			fieldList.add(field.name());
+                		}
+                	}
+            	} catch (Exception e) {
+            		break;
+            	}
+            }
         }
         catch (Exception e) {
             log.error(e);
