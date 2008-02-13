@@ -1,7 +1,9 @@
 package de.escidoc.sb.srw.lucene.sorting;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
+import java.text.Collator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.ScoreDocComparator;
@@ -20,6 +22,11 @@ import org.apache.lucene.search.SortField;
 		private IndexReader reader;
 		private String fieldName;
 		private boolean reverse;
+		private Collator collator;
+		private Pattern pattern = Pattern.compile("([äöüÄÖÜ])");
+		private Matcher matcher1 = pattern.matcher("");
+		private Matcher matcher2 = pattern.matcher("");
+
 		
 		public EscidocSearchResultComparator ()
 		{
@@ -41,6 +48,8 @@ import org.apache.lucene.search.SortField;
 			this.reader = reader;
 			this.fieldName = fieldName;
 			this.reverse = reverse;
+			this.collator = Collator.getInstance();
+			collator.setStrength(Collator.SECONDARY);
 		}
 		
 				
@@ -52,24 +61,25 @@ import org.apache.lucene.search.SortField;
 		}
 		
 		public int compare(ScoreDoc i, ScoreDoc j) {
+			int result = 0;
 			try {
-				Document doc1 = reader.document(i.doc);
-				Document doc2 = reader.document(j.doc);
-				String fieldvalue1 = doc1.get(fieldName);
-				String fieldvalue2 = doc2.get(fieldName);
+				String fieldvalue1 = reader.document(i.doc).get(fieldName);
+				String fieldvalue2 = reader.document(j.doc).get(fieldName);
 				if (fieldvalue1 == null && fieldvalue2 == null) {
 					return 0;
-				}
-				if (fieldvalue1 == null && fieldvalue2 != null) {
+				} else if (fieldvalue1 == null && fieldvalue2 != null) {
 					return -1;
-				}
-				if (fieldvalue1 != null && fieldvalue2 == null) {
+				} else if (fieldvalue1 != null && fieldvalue2 == null) {
 					return 1;
 				}
-				return fieldvalue1.compareToIgnoreCase(fieldvalue2);
+				matcher1.reset(fieldvalue1);
+				matcher2.reset(fieldvalue2);
+				fieldvalue1 = matcher1.replaceAll("$1e");
+				fieldvalue2 = matcher2.replaceAll("$1e");
+				result = collator.compare(fieldvalue1, fieldvalue2);
 			} catch (Exception e) {
-				return 0;
 			}
+			return result;
 		}
 
 		public int sortType() {
@@ -78,8 +88,7 @@ import org.apache.lucene.search.SortField;
 
 		public Comparable sortValue(ScoreDoc i) {
 			try {
-				Document doc = reader.document(i.doc);
-				return doc.get(fieldName);
+				return reader.document(i.doc).get(fieldName);
 			} catch (Exception e) {
 				return "";
 			}
