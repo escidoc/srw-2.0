@@ -1,10 +1,12 @@
 package de.escidoc.sb.srw.lucene.sorting;
 
 import java.text.Collator;
+import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.ScoreDocComparator;
 import org.apache.lucene.search.SortComparatorSource;
@@ -48,6 +50,14 @@ import org.apache.lucene.search.SortField;
 			this.reader = reader;
 			this.fieldName = fieldName;
 			this.reverse = reverse;
+
+			//check if field exists
+			Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
+			if (!fieldNames.contains(fieldName)) {
+				throw new RuntimeException(
+						"sortKey " + fieldName + " does not exist in the database");
+			}
+			
 			this.collator = Collator.getInstance();
 			collator.setStrength(Collator.SECONDARY);
 		}
