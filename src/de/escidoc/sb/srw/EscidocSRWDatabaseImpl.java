@@ -40,10 +40,12 @@ import java.io.StringReader;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
 
 import javax.servlet.ServletException;
 import javax.xml.parsers.DocumentBuilder;
@@ -470,33 +472,32 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
      */
     public String getIndexInfo() {
         Enumeration enumer = dbProperties.propertyNames();
-        Hashtable sets = new Hashtable();
+        HashSet<String> sets = new HashSet<String>();
         String index, indexSet, prop;
         StringBuffer sb = new StringBuffer("");
-        StringTokenizer st;
-        HashMap contextSets = new HashMap();
+        HashSet<String> contextSets = new HashSet<String>();
+        Matcher contextSetMatcher = Constants.CONTEXT_SET_PATTERN.matcher("");
+        Matcher qualifierMatcher = Constants.QUALIFIER_PATTERN.matcher("");
+        Matcher dotMatcher = Constants.DOT_PATTERN.matcher("");
         while (enumer.hasMoreElements()) {
             prop = (String) enumer.nextElement();
             // MIH: extract contextSetName
             // compare with fieldNames in LuceneIndex
             // if fieldName starts with <name>. that is contained in contextSets
             // then this field belongs to a contextSet
-            if (prop.startsWith("contextSet.")) {
-                contextSets.put(prop.substring(ELEVEN), "");
+            if (contextSetMatcher.reset(prop).matches()) {
+                contextSets.add(contextSetMatcher.group(1));
             }
-            if (prop.startsWith("qualifier.")) {
-                st = new StringTokenizer(prop.substring(TEN));
-                index = st.nextToken();
-                st = new StringTokenizer(index, ".");
-                if (st.countTokens() == 1) {
-                    indexSet = "local";
-                }
-                else {
-                    indexSet = st.nextToken();
-                }
-                index = st.nextToken();
-                if (sets.get(indexSet) == null) { // new set
-                    sets.put(indexSet, indexSet);
+            if (qualifierMatcher.reset(prop).matches()) {
+            	if (dotMatcher.reset(qualifierMatcher.group(1)).matches()) {
+            		indexSet = dotMatcher.group(1);
+            		index = dotMatcher.group(2);
+            	} else {
+            		indexSet = "local";
+            		index = qualifierMatcher.group(1);
+            	}
+                if (!sets.contains(indexSet)) { // new set
+                    sets.add(indexSet);
                 }
                 sb
                     .append("          <index>\n")
@@ -516,16 +517,12 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
         indexSet = null;
         index = null;
         if (fieldList != null) {
-            StringBuffer sortKeywords = new StringBuffer("");
-            for (Iterator iter = fieldList.iterator(); iter.hasNext();) {
-                String fieldName = (String) iter.next();
-                String[] parts = fieldName.split("\\.");
-                if (parts != null && parts.length > 1) {
-                    String indexName =
-                        fieldName.replaceFirst(parts[0] + "\\.", "");
-                    if (contextSets.get(parts[0]) != null) {
-                        if (sets.get(parts[0]) == null) {
-                            sets.put(parts[0], parts[0]);
+            for (String fieldName : fieldList) {
+                if (dotMatcher.reset(fieldName).matches()) {
+                    String indexName = dotMatcher.group(2);
+                    if (contextSets.contains(dotMatcher.group(1))) {
+                        if (!sets.contains(dotMatcher.group(1))) {
+                            sets.add(dotMatcher.group(1));
                         }
                         // get title from properties
                         String title =
@@ -535,24 +532,31 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
                             title = fieldName;
                         }
                         sb
-                            .append("          <index>\n").append(
-                                "            <title>").append(title).append(
-                                "</title>\n").append("            <map>\n")
-                            .append("              <name set=\"").append(
-                                parts[0]).append("\">").append(indexName)
-                            .append("</name>\n").append(
-                                "              </map>\n").append(
-                                "            </index>\n");
+                            .append("          <index>\n")
+                            .append("            <title>")
+                            .append(title).append("</title>\n")
+                            .append("            <map>\n")
+                            .append("              <name set=\"")
+                            .append(dotMatcher.group(1))
+                            .append("\">")
+                            .append(indexName)
+                            .append("</name>\n")
+                            .append("              </map>\n")
+                            .append("            </index>\n");
                     }
                 }
             }
             
             //Get sort Fields
+            StringBuffer sortKeywords = new StringBuffer("");
             fieldList =
                 ((EscidocLuceneTranslator) getCQLTranslator()).getStoredFieldList();
             for (String fieldName : fieldList) {
-                sortKeywords.append("          <sortKeyword>").append(
-                        fieldName).append("</sortKeyword>\n");
+            	if (dotMatcher.reset(fieldName).matches() 
+            			&& contextSets.contains(dotMatcher.group(1))) {
+                    sortKeywords.append("          <sortKeyword>").append(
+                            fieldName).append("</sortKeyword>\n");
+            	}
             }
             if (sortKeywords.length() > 0) {
                 sb.append(sortKeywords);
@@ -560,8 +564,7 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
         }
         if (sets != null && !sets.isEmpty()) {
             StringBuffer setsBuf = new StringBuffer("");
-            for (Iterator iter = sets.keySet().iterator(); iter.hasNext();) {
-                String setName = (String) iter.next();
+            for (String setName : sets) {
                 setsBuf.append("          <set identifier=\"").append(
                     dbProperties.getProperty("contextSet." + setName)).append(
                     "\" name=\"").append(setName).append("\"/>\n");
