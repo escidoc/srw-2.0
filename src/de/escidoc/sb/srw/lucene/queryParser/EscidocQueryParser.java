@@ -162,9 +162,10 @@ public class EscidocQueryParser extends QueryParser {
             if (t == null) {
                 break;
             }
-            if (!"".equals(t.termText())) {
+            String termText = new String(t.termBuffer(),0,t.termLength());
+            if (!"".equals(termText)) {
                 try {
-                    tlist.set(countTokens++, t.termText());
+                    tlist.set(countTokens++, termText);
                 }
                 catch (IndexOutOfBoundsException ioobe) {
                     countTokens = -1;
@@ -266,7 +267,7 @@ public class EscidocQueryParser extends QueryParser {
             if (t == null) {
                 break;
             }
-            tlist.add(t.termText());
+            tlist.add(new String(t.termBuffer(),0,t.termLength()));
         }
         try {
             source.close();
