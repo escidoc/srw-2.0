@@ -25,5 +25,9 @@
 	<classpathentry kind="lib" path="lib/srwlucene/lucene-highlighter-2.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/lucene-analyzers-2.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/lucene-snowball-2.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/stax/escidocStax.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/stax/stax2.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/stax/wstx-asl-3.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/stax/jsr173_1.0_api.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -120,6 +120,7 @@
         	
         	<!--MIH: Add escidoc + SRWLucene-libs -->
             <zipfileset dir="${lib.dir}/escidoc" includes="*.jar" prefix="WEB-INF/lib"/>
+            <zipfileset dir="${lib.dir}/escidoc/stax" includes="*.jar" prefix="WEB-INF/lib"/>
             <zipfileset dir="${lib.dir}/srwlucene" includes="*.jar" prefix="WEB-INF/lib"/>
         </jar>
     </target>

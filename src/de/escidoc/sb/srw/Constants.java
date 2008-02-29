@@ -38,10 +38,16 @@ import java.util.regex.Pattern;
  */
 public class Constants {
 
+    public static final String CHARACTER_ENCODING = "UTF-8";
+
     public static final Pattern CONTEXT_SET_PATTERN = Pattern.compile("contextSet\\.(.*)");
 
     public static final Pattern QUALIFIER_PATTERN = Pattern.compile("qualifier\\.(.*)");
 
     public static final Pattern DOT_PATTERN = Pattern.compile("(.*?)\\.(.*)");
+
+    public static final String GSEARCH_URL = "http://localhost:8080/fedoragsearch/rest";
+
+    public static final String XML_HIT_PATH = "/hits/hit";
 
 }

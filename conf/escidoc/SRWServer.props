@@ -60,3 +60,7 @@ db.escidoc_de.configuration=escidoc_de.SRWDatabase.properties
 db.escidoc_simple-highlighting.class=de.escidoc.sb.srw.EscidocSRWDatabaseImpl
 db.escidoc_simple-highlighting.configuration=escidoc_simple-highlighting.SRWDatabase.properties
 
+#ESCIDOC test gsearch search
+db.escidoc_gsearch.class=de.escidoc.sb.srw.EscidocSRWDatabaseImpl
+db.escidoc_gsearch.configuration=escidoc_gsearch.SRWDatabase.properties
+

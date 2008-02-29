@@ -68,7 +68,6 @@ import org.z3950.zing.cql.CQLParseException;
 import ORG.oclc.os.SRW.Record;
 import ORG.oclc.os.SRW.RecordIterator;
 import ORG.oclc.os.SRW.SRWDiagnostic;
-import de.escidoc.sb.srw.lucene.EscidocLuceneTranslator;
 
 /**
  * Class overwrites org.osuosl.srw.SRWDatabaseImpl. This is done because: -we
@@ -220,8 +219,8 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
             }
 
             // MIH: set maxRecs in request, because request
-            // gets passed to EscidocLuceneTranslator
-            // EscidocLuceneTranslator performs search and fills identifers
+            // gets passed to Escidoc..Translator
+            // Escidoc...Translator performs search and fills identifers
             request.setMaximumRecords(new NonNegativeInteger(Integer
                 .toString(numRecs)));
 
@@ -241,12 +240,12 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
             }
             else {
                 // MIH: call overwritten method that is only available in
-                // EscidocLuceneTranslator:
+                // Escidoc..Translator:
                 // 3rd parameter: request (to get sortKeys,
                 // startRecord, maxRecords..)!
                 results =
                     (ResolvingQueryResult) (
-                        (EscidocLuceneTranslator) getCQLTranslator())
+                        (EscidocTranslator) getCQLTranslator())
                         .search(queryRoot, extraData, request);
 
                 results.setResolver(getResolver());
@@ -513,7 +512,7 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
         
         //Get index fields
         Collection<String> fieldList =
-            ((EscidocLuceneTranslator) getCQLTranslator()).getIndexedFieldList();
+            ((EscidocTranslator) getCQLTranslator()).getIndexedFieldList();
         indexSet = null;
         index = null;
         if (fieldList != null) {
@@ -550,7 +549,7 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
             //Get sort Fields
             StringBuffer sortKeywords = new StringBuffer("");
             fieldList =
-                ((EscidocLuceneTranslator) getCQLTranslator()).getStoredFieldList();
+                ((EscidocTranslator) getCQLTranslator()).getStoredFieldList();
             for (String fieldName : fieldList) {
             	if (dotMatcher.reset(fieldName).matches() 
             			&& contextSets.contains(dotMatcher.group(1))) {
