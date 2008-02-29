@@ -21,9 +21,9 @@
  */
 
 /*
- * Copyright 2006-2007 Fachinformationszentrum Karlsruhe Gesellschaft
- * für wissenschaftlich-technische Information mbH and Max-Planck-
- * Gesellschaft zur Förderung der Wissenschaft e.V.  
+ * Copyright 2008 Fachinformationszentrum Karlsruhe Gesellschaft
+ * fuer wissenschaftlich-technische Information mbH and Max-Planck-
+ * Gesellschaft zur Foerderung der Wissenschaft e.V.  
  * All rights reserved.  Use is subject to license terms.
  */
 
@@ -60,11 +60,11 @@ import org.z3950.zing.cql.CQLNode;
 import org.z3950.zing.cql.CQLTermNode;
 
 import ORG.oclc.os.SRW.QueryResult;
-import de.escidoc.core.stax.StaxParser;
-import de.escidoc.core.stax.handler.SplitHandler;
+import de.escidoc.core.common.util.service.HttpRequester;
+import de.escidoc.core.common.util.stax.StaxParser;
 import de.escidoc.sb.srw.Constants;
 import de.escidoc.sb.srw.EscidocTranslator;
-import de.escidoc.sb.srw.util.HttpRequester;
+import de.escidoc.sb.srw.stax.handler.SplitHandler;
 
 /**
  * Class overwrites org.osuosl.srw.lucene.LuceneTranslator. This is done
