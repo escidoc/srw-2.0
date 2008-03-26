@@ -583,9 +583,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 			fieldList.add(field.name());
                 		}
                 	}
-            	} catch (Exception e) {
-            		break;
-            	}
+            	} catch (Exception e) {}
             }
         }
         catch (Exception e) {
