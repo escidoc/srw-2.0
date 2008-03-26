@@ -32,7 +32,6 @@ package de.escidoc.sb.srw.lucene.highlighting;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 
 /**
  * Class makes xml out of highlight-data.
@@ -41,7 +40,8 @@ import java.util.Iterator;
  * @sb
  */
 public class HighlightXmlizer {
-    private Collection highlightFragmentDatas = new ArrayList();
+    private Collection<HashMap<String, String>> highlightFragmentDatas = 
+    							new ArrayList<HashMap<String, String>>();
 
     private String fragmentSeparator;
 
@@ -97,9 +97,7 @@ public class HighlightXmlizer {
         if (highlightFragmentDatas != null && !highlightFragmentDatas.isEmpty()) {
             xml.append("<").append(getNamespacePrefix(namespacePrefix)).append(
                 "highlight>");
-            for (Iterator iter = highlightFragmentDatas.iterator(); iter
-                .hasNext();) {
-                HashMap highlightFragmentData = (HashMap) iter.next();
+            for (HashMap<String, String> highlightFragmentData : highlightFragmentDatas) {
                 String type = (String) highlightFragmentData.get("type");
                 String objid =
                     (String) highlightFragmentData.get("highlightLocator");
@@ -273,7 +271,8 @@ public class HighlightXmlizer {
      *            HashMap.
      * @sb
      */
-    public void addHighlightFragmentData(final HashMap highlightFragmentData) {
+    public void addHighlightFragmentData(
+    		final HashMap<String, String> highlightFragmentData) {
         highlightFragmentDatas.add(highlightFragmentData);
     }
 

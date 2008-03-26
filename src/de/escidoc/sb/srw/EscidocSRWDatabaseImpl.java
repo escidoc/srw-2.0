@@ -39,12 +39,8 @@ import gov.loc.www.zing.srw.StringOrXmlFragment;
 import java.io.StringReader;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 
 import javax.servlet.ServletException;

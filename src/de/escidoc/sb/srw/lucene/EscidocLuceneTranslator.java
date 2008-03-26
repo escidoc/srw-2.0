@@ -77,11 +77,16 @@ import de.escidoc.sb.srw.lucene.sorting.EscidocSearchResultComparator;
 
 /**
  * Class overwrites org.osuosl.srw.lucene.LuceneTranslator. This is done
- * because: -we dont retrieve and store all search-hits but only the ones
- * requested -we dont use result-sets -we do sorting while querying lucene and
- * not afterwards -we have to rewrite the CQLTermNodes because we have to
+ * because: 
+ * -we dont retrieve and store all search-hits but only the ones
+ * requested 
+ * -we dont use result-sets -we do sorting while querying lucene and
+ * not afterwards 
+ * -we have to rewrite the CQLTermNodes because we have to
  * replace default search field cql.serverChoice with configured default-search
- * field -we have to analyze the terms with the analyzer -enable fuzzy search
+ * field 
+ * -we have to analyze the terms with the analyzer 
+ * -enable fuzzy search
  * 
  * @author MIH
  * @sb
