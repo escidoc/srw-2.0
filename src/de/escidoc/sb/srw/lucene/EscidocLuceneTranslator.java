@@ -102,6 +102,18 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         "cqlTranslator.sortComparator";
 
     public static final int BOOLEAN_MAX_CLAUSE_COUNT = 1000000;
+    
+    private static final Pattern namespacePattern = 
+    				Pattern.compile("(?s)<([^>]*?):");
+    
+    private static Matcher namespaceMatcher = 
+    				namespacePattern.matcher("");
+
+    private static final Pattern firstelementPattern = 
+		Pattern.compile("(?s)(<\\s*[^\\?]*?>)");
+
+    private static Matcher firstelementMatcher = 
+    				firstelementPattern.matcher("");
 
     /**
      * SrwHighlighter.
@@ -629,19 +641,18 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         	}
             if (highlighter != null) {
                 String nsName;
-                Pattern pattern = Pattern.compile("(?s)<([^>]*?):");
-                Matcher matcher = pattern.matcher(idFieldStr);
-                if (matcher.find()) {
-                    nsName = matcher.group(1);
+                namespaceMatcher.reset(idFieldStr);
+                if (namespaceMatcher.find()) {
+                    nsName = namespaceMatcher.group(1);
                 }
                 else {
                     nsName = "";
                 }
                 String highlight = highlighter.getFragments(doc, nsName);
                 if (highlight != null && !highlight.equals("")) {
-                    idFieldStr =
-                        idFieldStr.replaceFirst("(?s)(<\\s*[^\\?]*?>)", "$1"
-                            + highlight);
+                	firstelementMatcher.reset(idFieldStr);
+                	idFieldStr = firstelementMatcher.replaceFirst(
+                			"$1" + Matcher.quoteReplacement(highlight));
                 }
             }
         }
