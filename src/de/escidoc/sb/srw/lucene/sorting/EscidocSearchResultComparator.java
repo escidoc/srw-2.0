@@ -53,7 +53,8 @@ import org.apache.lucene.search.SortField;
 		private String fieldName;
 		private boolean reverse;
 		private Collator collator;
-		private Pattern pattern = Pattern.compile("([äöüÄÖÜ])");
+		private Pattern pattern = Pattern.compile(
+				"([\u00e4\u00f6\u00fc\u00c4\u00d6\u00dc])");
 		private Matcher matcher1 = pattern.matcher("");
 		private Matcher matcher2 = pattern.matcher("");
 
