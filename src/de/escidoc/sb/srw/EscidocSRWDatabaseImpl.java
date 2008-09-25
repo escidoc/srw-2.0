@@ -99,6 +99,7 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
      *             e
      * @sb
      */
+    @Override
     public SearchRetrieveResponseType doRequest(
         final SearchRetrieveRequestType request) throws ServletException {
 
@@ -191,8 +192,8 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
 
             CQLNode queryRoot = null;
             //MIH: Workaround because CQLParser has Bug when handling \"
-            //delete \"
-            query = query.replaceAll("\\\\\"", "");
+            //replace \" with #quote#
+            query = query.replaceAll("([^\\\\])\\\\\"", "$1#quote#");
             
             if (query.matches(".*[^\\\\]\".*")) {
             	query = escapeBackslash(query);
@@ -390,6 +391,7 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
      * @return String databaseInfo xml for explainPlan
      * @sb
      */
+    @Override
     public String getDatabaseInfo() {
         StringBuffer sb=new StringBuffer();
         sb.append("        <databaseInfo>\n");
@@ -426,6 +428,7 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
      * @return String databaseInfo xml for explainPlan
      * @sb
      */
+    @Override
     public String getMetaInfo() {
         StringBuffer sb=new StringBuffer();
         boolean writeElement = false;
@@ -465,6 +468,7 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
      * @return String indexInfo xml for explainPlan
      * @sb
      */
+    @Override
     public String getIndexInfo() {
         Enumeration enumer = dbProperties.propertyNames();
         HashSet<String> sets = new HashSet<String>();

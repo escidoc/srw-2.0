@@ -104,7 +104,8 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 	 * 
 	 * @sb
 	 */
-	public QueryResult search(final CQLNode queryRoot,
+	@Override
+    public QueryResult search(final CQLNode queryRoot,
 			final ExtraDataType extraDataType) throws SRWDiagnostic {
 		return search(queryRoot, extraDataType, null);
 	}
@@ -146,7 +147,8 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 	 * 
 	 * @sb
 	 */
-	public abstract TermType[] scan(final CQLNode queryRoot,
+	@Override
+    public abstract TermType[] scan(final CQLNode queryRoot,
 			final ExtraDataType extraDataType) throws Exception;
 	
     /**
@@ -263,7 +265,8 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 	}
 
 	/**
-	 * special characters that Lucene requires to escape: + - ! ( ) { } [ ] ^ " ~ * ? : \
+	 * special characters that Lucene requires to escape: 
+	 * + - & | ! ( ) { } [ ] ^ " ~ * ? : \
 	 * cql already escaped *,?,",\ and ^ so escape the rest.
 	 * 
 	 * @param text
@@ -275,6 +278,8 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 		replacedText = " " + replacedText;
 		replacedText = StringUtils.replace(replacedText, "+", "\\+");
 		replacedText = StringUtils.replace(replacedText, "-", "\\-");
+        replacedText = StringUtils.replace(replacedText, "&", "\\&");
+        replacedText = StringUtils.replace(replacedText, "|", "\\|");
 		replacedText = StringUtils.replace(replacedText, "!", "\\!");
 		replacedText = StringUtils.replace(replacedText, "(", "\\(");
 		replacedText = StringUtils.replace(replacedText, ")", "\\)");
@@ -284,6 +289,9 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 		replacedText = StringUtils.replace(replacedText, "]", "\\]");
 		replacedText = StringUtils.replace(replacedText, "~", "\\~");
 		replacedText = StringUtils.replace(replacedText, ":", "\\:");
+		//workaround because cql-parser cant handle \"
+		//see EscidocSRWDatabaseImpl.doRequest
+        replacedText = StringUtils.replace(replacedText, "#quote#", "\\\"");
 		return replacedText.substring(1);
 	}
 
@@ -298,7 +306,8 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 	 * 
 	 * @sb
 	 */
-	public Query makeQuery(final CQLNode node) throws SRWDiagnostic {
+	@Override
+    public Query makeQuery(final CQLNode node) throws SRWDiagnostic {
 		return makeQuery(node, null);
 	}
 
@@ -315,7 +324,8 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 	 * 
 	 * @sb
 	 */
-	public Query makeQuery(final CQLNode node, final Query leftQuery)
+	@Override
+    public Query makeQuery(final CQLNode node, final Query leftQuery)
 			throws SRWDiagnostic {
 		Query query = null;
 

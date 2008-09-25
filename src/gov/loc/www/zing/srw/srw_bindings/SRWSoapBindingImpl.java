@@ -16,27 +16,7 @@
 
 package gov.loc.www.zing.srw.srw_bindings;
 
-import ORG.oclc.os.SRW.Utilities;
-import gov.loc.www.zing.cql.xcql.OperandType;
-import gov.loc.www.zing.cql.xcql.RelationType;
-import gov.loc.www.zing.cql.xcql.SearchClauseType;
-import gov.loc.www.zing.srw.EchoedScanRequestType;
-import gov.loc.www.zing.srw.EchoedSearchRetrieveRequestType;
-import gov.loc.www.zing.srw.ScanRequestType;
-import gov.loc.www.zing.srw.ScanResponseType;
-import gov.loc.www.zing.srw.SearchRetrieveRequestType;
-import gov.loc.www.zing.srw.SearchRetrieveResponseType;
-import gov.loc.www.zing.srw.interfaces.SRWPort;
-import java.rmi.RemoteException;
-
-import ORG.oclc.os.SRW.SRWDatabase;
-import ORG.oclc.os.SRW.SRWDiagnostic;
-import org.apache.axis.MessageContext;
-import org.apache.axis.types.NonNegativeInteger;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.z3950.zing.cql.CQLParser;
-import org.z3950.zing.cql.CQLTermNode;
+import gov.loc.www.zing.cql.xcql.OperandType;import gov.loc.www.zing.cql.xcql.RelationType;import gov.loc.www.zing.cql.xcql.SearchClauseType;import gov.loc.www.zing.srw.EchoedScanRequestType;import gov.loc.www.zing.srw.EchoedSearchRetrieveRequestType;import gov.loc.www.zing.srw.ScanRequestType;import gov.loc.www.zing.srw.ScanResponseType;import gov.loc.www.zing.srw.SearchRetrieveRequestType;import gov.loc.www.zing.srw.SearchRetrieveResponseType;import gov.loc.www.zing.srw.interfaces.SRWPort;import java.rmi.RemoteException;import org.apache.axis.MessageContext;import org.apache.axis.types.NonNegativeInteger;import org.apache.commons.logging.Log;import org.apache.commons.logging.LogFactory;import org.z3950.zing.cql.CQLParser;import org.z3950.zing.cql.CQLTermNode;import ORG.oclc.os.SRW.SRWDatabase;import ORG.oclc.os.SRW.SRWDiagnostic;import ORG.oclc.os.SRW.Utilities;
 
 public class SRWSoapBindingImpl implements SRWPort {
     Log log=LogFactory.getLog(SRWSoapBindingImpl.class);

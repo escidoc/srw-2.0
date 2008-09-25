@@ -80,8 +80,8 @@ import de.escidoc.sb.srw.lucene.sorting.EscidocSearchResultComparator;
  * because: 
  * -we dont retrieve and store all search-hits but only the ones
  * requested 
- * -we dont use result-sets -we do sorting while querying lucene and
- * not afterwards 
+ * -we dont use result-sets 
+ * -we do sorting while querying lucene and not afterwards 
  * -we have to rewrite the CQLTermNodes because we have to
  * replace default search field cql.serverChoice with configured default-search
  * field 
@@ -225,6 +225,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      * 
      * @sb
      */
+    @Override
     public void init(final Properties properties) {
         String temp;
 
@@ -300,6 +301,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      * 
      * @sb
      */
+    @Override
     public QueryResult search(
         final CQLNode queryRoot, final ExtraDataType extraDataType,
         final SearchRetrieveRequestType request) throws SRWDiagnostic {
@@ -436,6 +438,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      * 
      * @sb
      */
+    @Override
     public TermType[] scan(
         final CQLNode queryRoot, final ExtraDataType extraDataType)
         throws Exception {
@@ -546,6 +549,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      * 
      * @sb
      */
+    @Override
     public Collection<String> getIndexedFieldList() {
         Collection<String> fieldList = new ArrayList<String>();
         IndexReader reader = null;
@@ -579,6 +583,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      * 
      * @sb
      */
+    @Override
     public Collection<String> getStoredFieldList() {
         Collection<String> fieldList = new ArrayList<String>();
         IndexReader reader = null;

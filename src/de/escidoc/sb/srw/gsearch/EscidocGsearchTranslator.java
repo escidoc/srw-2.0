@@ -128,7 +128,8 @@ public class EscidocGsearchTranslator extends EscidocTranslator {
 	 * 
 	 * @sb
 	 */
-	public void init(final Properties properties) {
+	@Override
+    public void init(final Properties properties) {
 		String temp;
 
 		temp = (String) properties.get(PROPERTY_INDEXPATH);
@@ -163,7 +164,8 @@ public class EscidocGsearchTranslator extends EscidocTranslator {
 	 * 
 	 * @sb
 	 */
-	public QueryResult search(final CQLNode queryRoot,
+	@Override
+    public QueryResult search(final CQLNode queryRoot,
 			final ExtraDataType extraDataType,
 			final SearchRetrieveRequestType request) throws SRWDiagnostic {
 		/**
@@ -241,7 +243,8 @@ public class EscidocGsearchTranslator extends EscidocTranslator {
 	 * 
 	 * @sb
 	 */
-	public TermType[] scan(final CQLNode queryRoot,
+	@Override
+    public TermType[] scan(final CQLNode queryRoot,
 			final ExtraDataType extraDataType) throws Exception {
 
 		TermType[] response = new TermType[0];
@@ -345,7 +348,8 @@ public class EscidocGsearchTranslator extends EscidocTranslator {
 	 * 
 	 * @sb
 	 */
-	public Collection<String> getIndexedFieldList() {
+	@Override
+    public Collection<String> getIndexedFieldList() {
 		Collection<String> fieldList = new ArrayList<String>();
 		IndexReader reader = null;
 		try {
@@ -375,7 +379,8 @@ public class EscidocGsearchTranslator extends EscidocTranslator {
 	 * 
 	 * @sb
 	 */
-	public Collection<String> getStoredFieldList() {
+	@Override
+    public Collection<String> getStoredFieldList() {
 		Collection<String> fieldList = new ArrayList<String>();
 		IndexReader reader = null;
 		try {
