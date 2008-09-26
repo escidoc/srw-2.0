@@ -35,6 +35,8 @@ import gov.loc.www.zing.srw.TermType;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.axis.types.NonNegativeInteger;
 import org.apache.commons.lang.StringUtils;
@@ -66,6 +68,13 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 	public static final int DIAGNOSTIC_CODE_TWENTY = 19;
 
 	public static final int DIAGNOSTIC_CODE_FOURTYSEVEN = 47;
+	
+    public static final Pattern LUCENE_SPECIAL_CHAR_PATTERN = 
+        Pattern.compile("([^\\\\])([\\+\\-\\&\\|!\\(\\)\\{\\}\\[\\]~:])"
+                + "|([^\\\\]\\\\\\\\)([\\+\\-\\&\\|!\\(\\)\\{\\}\\[\\]~:])");
+	
+	private static Matcher luceneSpecialCharMatcher = 
+	                LUCENE_SPECIAL_CHAR_PATTERN.matcher("");
 
 	/**
 	 * Default Index Field. Is static because it is used in overwritten static
@@ -276,19 +285,8 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 	public static String escapeSpecialCharacters(final String text) {
 		String replacedText = text;
 		replacedText = " " + replacedText;
-		replacedText = StringUtils.replace(replacedText, "+", "\\+");
-		replacedText = StringUtils.replace(replacedText, "-", "\\-");
-        replacedText = StringUtils.replace(replacedText, "&", "\\&");
-        replacedText = StringUtils.replace(replacedText, "|", "\\|");
-		replacedText = StringUtils.replace(replacedText, "!", "\\!");
-		replacedText = StringUtils.replace(replacedText, "(", "\\(");
-		replacedText = StringUtils.replace(replacedText, ")", "\\)");
-		replacedText = StringUtils.replace(replacedText, "{", "\\{");
-		replacedText = StringUtils.replace(replacedText, "}", "\\}");
-		replacedText = StringUtils.replace(replacedText, "[", "\\[");
-		replacedText = StringUtils.replace(replacedText, "]", "\\]");
-		replacedText = StringUtils.replace(replacedText, "~", "\\~");
-		replacedText = StringUtils.replace(replacedText, ":", "\\:");
+        luceneSpecialCharMatcher.reset(replacedText);
+        replacedText = luceneSpecialCharMatcher.replaceAll("$1$3\\\\$2$4");
 		//workaround because cql-parser cant handle \"
 		//see EscidocSRWDatabaseImpl.doRequest
         replacedText = StringUtils.replace(replacedText, "#quote#", "\\\"");
