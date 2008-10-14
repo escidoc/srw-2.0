@@ -233,6 +233,7 @@ public class EscidocHighlighter implements SrwHighlighter {
     public void initialize(final String indexPath, final Query query)
         throws Exception {
         Query replacedQuery = query;
+        searchFields = new HashSet<String>();
         if (indexPath != null && indexPath.trim().length() != 0
             && query != null) {
             // get search-fields from query////////////////////////////////////
