@@ -98,15 +98,15 @@ public class HighlightXmlizer {
             xml.append("<").append(getNamespacePrefix(namespacePrefix)).append(
                 "highlight>");
             for (HashMap<String, String> highlightFragmentData : highlightFragmentDatas) {
-                String type = (String) highlightFragmentData.get("type");
+                String type = highlightFragmentData.get("type");
                 String objid =
-                    (String) highlightFragmentData.get("highlightLocator");
+                    highlightFragmentData.get("highlightLocator");
                 if (objid != null) {
                     objid = objid.replaceAll("\\/content", "");
                     objid = objid.replaceAll(".*\\/", "");
                 }
                 String textFragmentData =
-                    (String) highlightFragmentData.get("highlightSnippet");
+                    highlightFragmentData.get("highlightSnippet");
                 if (textFragmentData != null && !textFragmentData.equals("")) {
                     if (type == null || type.equals("")) {
                         throw new Exception("type may not be null");
@@ -221,6 +221,7 @@ public class HighlightXmlizer {
 
     /**
      * Sometimes, hit-words start with ( or < etc. Replace this
+     * Ensure that CDATA-Section is not corrupted.
      * 
      * @param textFragment
      *            textFragment.
@@ -242,6 +243,7 @@ public class HighlightXmlizer {
             text =
                 text.replaceAll("(<[^<>]*?>)(" + highlightEndMarker + ")",
                     "$2$1");
+            text = text.replaceAll("\\]\\]>", "");
         }
         return text;
     }
