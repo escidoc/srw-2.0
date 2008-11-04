@@ -475,7 +475,9 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
         String index, indexSet, prop;
         StringBuffer sb = new StringBuffer("");
         HashSet<String> contextSets = new HashSet<String>();
+        HashSet<String> sortSets = new HashSet<String>();
         Matcher contextSetMatcher = Constants.CONTEXT_SET_PATTERN.matcher("");
+        Matcher sortSetMatcher = Constants.SORT_SET_PATTERN.matcher("");
         Matcher qualifierMatcher = Constants.QUALIFIER_PATTERN.matcher("");
         Matcher dotMatcher = Constants.DOT_PATTERN.matcher("");
         while (enumer.hasMoreElements()) {
@@ -486,6 +488,13 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
             // then this field belongs to a contextSet
             if (contextSetMatcher.reset(prop).matches()) {
                 contextSets.add(contextSetMatcher.group(1));
+            }
+            // MIH: extract sortSetName
+            // compare with fieldNames in LuceneIndex
+            // if fieldName starts with <name>. that is contained in sortSets
+            // then this field belongs to a sortSet
+            if (sortSetMatcher.reset(prop).matches()) {
+                sortSets.add(sortSetMatcher.group(1));
             }
             if (qualifierMatcher.reset(prop).matches()) {
             	if (dotMatcher.reset(qualifierMatcher.group(1)).matches()) {
@@ -548,14 +557,15 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
             
             //Get sort Fields
             StringBuffer sortKeywords = new StringBuffer("");
-            fieldList =
-                ((EscidocTranslator) getCQLTranslator()).getStoredFieldList();
-            for (String fieldName : fieldList) {
-            	if (dotMatcher.reset(fieldName).matches() 
-            			&& contextSets.contains(dotMatcher.group(1))) {
-                    sortKeywords.append("          <sortKeyword>").append(
-                            fieldName).append("</sortKeyword>\n");
-            	}
+            if (fieldList != null) {
+                for (String fieldName : fieldList) {
+                    if (dotMatcher.reset(fieldName).matches()) {
+                        if (sortSets.contains(dotMatcher.group(1))) {
+                            sortKeywords.append("          <sortKeyword>").append(
+                                    fieldName).append("</sortKeyword>\n");
+                        }
+                    }
+                }
             }
             if (sortKeywords.length() > 0) {
                 sb.append(sortKeywords);
