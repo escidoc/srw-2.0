@@ -195,6 +195,11 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
             //replace \" with #quote#
             query = query.replaceAll("([^\\\\])\\\\\"", "$1#quote#");
             
+            //MIH: another workaround if query is empty string
+            if (query.trim().equals("")) {
+                query = "nosrwqueryprovided";
+            }
+            
             if (query.matches(".*[^\\\\]\".*")) {
             	query = escapeBackslash(query);
             }
