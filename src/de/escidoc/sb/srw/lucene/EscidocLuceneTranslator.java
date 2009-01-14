@@ -70,6 +70,7 @@ import org.z3950.zing.cql.CQLNode;
 import org.z3950.zing.cql.CQLTermNode;
 
 import ORG.oclc.os.SRW.QueryResult;
+import de.escidoc.sb.srw.Constants;
 import de.escidoc.sb.srw.EscidocTranslator;
 import de.escidoc.sb.srw.lucene.highlighting.SrwHighlighter;
 import de.escidoc.sb.srw.lucene.queryParser.EscidocQueryParser;
@@ -101,8 +102,6 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
     public static final String PROPERTY_COMPARATOR =
         "cqlTranslator.sortComparator";
 
-    public static final int BOOLEAN_MAX_CLAUSE_COUNT = 1000000;
-    
     private static final Pattern namespacePattern = 
     				Pattern.compile("(?s)<([^>]*?):");
     
@@ -306,7 +305,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         final CQLNode queryRoot, final ExtraDataType extraDataType,
         final SearchRetrieveRequestType request) throws SRWDiagnostic {
         // Increase maxClauseCount of BooleanQuery for Wildcard-Searches
-        BooleanQuery.setMaxClauseCount(BOOLEAN_MAX_CLAUSE_COUNT);
+        BooleanQuery.setMaxClauseCount(Constants.BOOLEAN_MAX_CLAUSE_COUNT);
 
         // Get Lucene Sort-Object
         Sort sort = getLuceneSortObject(request.getSortKeys());
