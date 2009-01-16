@@ -29,5 +29,7 @@
 	<classpathentry kind="lib" path="lib/escidoc/stax/wstx-asl-3.1.2.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/stax/jsr173_1.0_api.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/common.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/lucene-ja.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/sen.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
