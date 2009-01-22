@@ -70,6 +70,7 @@ import org.z3950.zing.cql.CQLNode;
 import org.z3950.zing.cql.CQLTermNode;
 
 import ORG.oclc.os.SRW.QueryResult;
+import de.escidoc.core.common.util.configuration.EscidocConfiguration;
 import de.escidoc.sb.srw.Constants;
 import de.escidoc.sb.srw.EscidocTranslator;
 import de.escidoc.sb.srw.lucene.highlighting.SrwHighlighter;
@@ -260,7 +261,11 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         temp = (String) properties.get(PROPERTY_ANALYZER);
         if (temp != null && temp.trim().length() != 0) {
             try {
-                analyzer = (Analyzer) Class.forName(temp).newInstance();
+                //Try to get Analyzer from escidoc-configuration
+                String analyzerStr = EscidocConfiguration.getInstance()
+                .get(
+                    EscidocConfiguration.LUCENE_ANALYZER, temp);
+                analyzer = (Analyzer) Class.forName(analyzerStr).newInstance();
             }
             catch (Exception e) {
                 log.error(e);
