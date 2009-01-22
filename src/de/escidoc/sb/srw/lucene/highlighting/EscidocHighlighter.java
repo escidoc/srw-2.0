@@ -52,6 +52,8 @@ import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
+import de.escidoc.core.common.util.configuration.EscidocConfiguration;
+
 /**
  * Class implements lucene-highlighting of configurable lucene-fields.
  * 
@@ -152,7 +154,11 @@ public class EscidocHighlighter implements SrwHighlighter {
         temp = (String) props.get(PROPERTY_ANALYZER);
         if (temp != null && temp.trim().length() != 0) {
             try {
-                analyzer = (Analyzer) Class.forName(temp).newInstance();
+                //Try to get Analyzer from escidoc-configuration
+                String analyzerStr = EscidocConfiguration.getInstance()
+                .get(
+                    EscidocConfiguration.LUCENE_ANALYZER, temp);
+                analyzer = (Analyzer) Class.forName(analyzerStr).newInstance();
             }
             catch (Exception e) {
                 log.error(e);
