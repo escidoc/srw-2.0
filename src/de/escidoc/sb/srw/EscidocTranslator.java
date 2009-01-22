@@ -387,21 +387,33 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 							relation);
 				} else if (relation.equals("<")) {
 					Term term = new Term(index, ctn.getTerm() + modifier);
+					if (term.text() == null || term.text().equals("")) {
+					    term = term.createTerm("0");
+					}
 					// term is upperbound, exclusive
 					query = new RangeQuery(new Term(term.field(), "0"), term,
 							false);
 				} else if (relation.equals(">")) {
 					Term term = new Term(index, ctn.getTerm() + modifier);
+                    if (term.text() == null || term.text().equals("")) {
+                        term = term.createTerm("0");
+                    }
 					// term is lowerbound, exclusive
 					query = new RangeQuery(term, new Term(term.field(),
 							"ZZZZZZZZZZZZZZZ"), false);
 				} else if (relation.equals("<=")) {
 					Term term = new Term(index, ctn.getTerm() + modifier);
+                    if (term.text() == null || term.text().equals("")) {
+                        term = term.createTerm("0");
+                    }
 					// term is upperbound, inclusive
 					query = new RangeQuery(new Term(term.field(), "0"), term,
 							true);
 				} else if (relation.equals(">=")) {
 					Term term = new Term(index, ctn.getTerm() + modifier);
+                    if (term.text() == null || term.text().equals("")) {
+                        term = term.createTerm("0");
+                    }
 					// term is lowebound, inclusive
 					query = new RangeQuery(term, new Term(term.field(),
 							"ZZZZZZZZZZZZZZZ"), true);
