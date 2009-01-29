@@ -24,12 +24,20 @@
 
 package ORG.oclc.os.SRW;
 
-import org.apache.axis.transport.http.AxisHttpSession;
-import org.apache.axis.transport.http.AxisServlet;
-//import org.apache.axis.transport.http.AxisServ1etBase;
-import org.apache.axis.transport.http.HTTPConstants;
-import org.apache.axis.transport.http.HTTPTransport;
-import org.apache.axis.transport.http.ServletEndpointContextImpl;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Iterator;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.soap.SOAPException;
 
 import org.apache.axis.AxisEngine;
 import org.apache.axis.AxisFault;
@@ -42,6 +50,11 @@ import org.apache.axis.description.OperationDesc;
 import org.apache.axis.description.ServiceDesc;
 import org.apache.axis.handlers.soap.SOAPService;
 import org.apache.axis.security.servlet.ServletSecurityProvider;
+import org.apache.axis.transport.http.AxisHttpSession;
+import org.apache.axis.transport.http.AxisServlet;
+import org.apache.axis.transport.http.HTTPConstants;
+import org.apache.axis.transport.http.HTTPTransport;
+import org.apache.axis.transport.http.ServletEndpointContextImpl;
 import org.apache.axis.utils.Admin;
 import org.apache.axis.utils.JavaUtils;
 import org.apache.axis.utils.Messages;
@@ -49,22 +62,6 @@ import org.apache.axis.utils.XMLUtils;
 import org.apache.commons.logging.Log;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
-import java.net.URLEncoder;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-//import javax.servlet.http.HttpUtils;
-import javax.xml.soap.SOAPException;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.HttpURLConnection;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
 
 /**
  *
@@ -126,6 +123,7 @@ public class SRWServlet extends AxisServlet {
      * Cached path to JWS output directory
      */
     private String jwsClassDir = null;
+    @Override
     protected String getJWSClassDir() { return jwsClassDir; }
 
     protected SRWServletInfo srwInfo=null;
@@ -142,6 +140,7 @@ public class SRWServlet extends AxisServlet {
     /**
      * Initialization method.
      */
+    @Override
     public void init() throws ServletException {
         srwInfo=new SRWServletInfo();
         srwInfo.init(getServletConfig());
@@ -193,6 +192,7 @@ public class SRWServlet extends AxisServlet {
      * @throws ServletException
      * @throws IOException
      */
+    @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException
     {
@@ -388,6 +388,7 @@ public class SRWServlet extends AxisServlet {
      * in the process
      * @param fault what went wrong.
      */
+    @Override
     protected void processAxisFault(AxisFault fault) {
         //log the fault
         Element runtimeException = fault.lookupFaultDetail(
@@ -743,7 +744,8 @@ public class SRWServlet extends AxisServlet {
      * @throws ServletException trouble
      * @throws IOException different trouble
      */
-     public void doPost(HttpServletRequest req, HttpServletResponse res)
+     @Override
+    public void doPost(HttpServletRequest req, HttpServletResponse res)
         throws ServletException, IOException
     {
         long t0=0, t1=0, t2=0, t3=0, t4=0;
@@ -942,6 +944,7 @@ public class SRWServlet extends AxisServlet {
      * @param af Axis Fault
      * @return HTTP Status code.
      */
+    @Override
     protected int getHttpServletResponseStatus(AxisFault af) {
         // TODO: Should really be doing this with explicit AxisFault
         // subclasses... --Glen
@@ -1122,6 +1125,7 @@ public class SRWServlet extends AxisServlet {
      * by derived class.
      * @return directory for JWS files
      */
+    @Override
     protected String getDefaultJWSClassDir() {
         return (getWebInfPath() == null)
                ? null  // ??? what is a good FINAL default for WebLogic?
@@ -1432,11 +1436,13 @@ public class SRWServlet extends AxisServlet {
     }
 
 
-    private String cleanup(char[] buf) {
+    private static String cleanup(char[] buf) {
         int i, j, len=buf.length;
+        boolean inRecordData = false;
+        boolean startRecordData = false;
         //len=0;
         for(i=0; i<len; i++) {
-            if(buf[i]==' ' && len-i>9) // might be " xsi:type"
+            if(!inRecordData && buf[i]==' ' && len-i>9) // might be " xsi:type"
                 if(buf[i+1]=='x' && buf[i+2]=='s' && buf[i+3]=='i' &&
                   buf[i+4]==':' && buf[i+5]=='t' && buf[i+6]=='y' &&
                   buf[i+7]=='p' && buf[i+8]=='e') {
@@ -1456,45 +1462,30 @@ public class SRWServlet extends AxisServlet {
                     i--;
                     continue;
                 }
-/*
-            if(buf[i]=='<' && len-1>11) // might be "<recordData>"
+
+            if(!inRecordData && buf[i]=='<' && len-1>11) {
+                // might be "<recordData>"
                 if(buf[i+1]=='r' && buf[i+2]=='e' && buf[i+3]=='c' &&
-                  buf[i+4]=='o' && buf[i+5]=='r' && buf[i+6]=='d' &&
-                  buf[i+7]=='D' && buf[i+8]=='a' && buf[i+9]=='t' &&
-                  buf[i+10]=='a' && buf[i+11]=='>') {
-                    for(j=i+11; j<len; j++) {
-                        if(buf[j]=='<') // hit end of field
-                            break;
-                        if(buf[j]=='&') {
-                            if(buf[j+1]=='l') {
-                                if(buf[j+2]=='t' && buf[j+3]==';') {
-                                    buf[j]='<';
-                                    System.arraycopy(buf, j+4, buf, j+1, len-j-4);
-                                    len-=3;
-                                }
-                                continue;
-                            }
-                            if(buf[j+1]=='g') {
-                                if(buf[j+2]=='t' && buf[j+3]==';') {
-                                    buf[j]='>';
-                                    System.arraycopy(buf, j+4, buf, j+1, len-j-4);
-                                    len-=3;
-                                }
-                                continue;
-                            }
-                            if(buf[j+1]=='q') {
-                                if(buf[j+2]=='u' && buf[j+3]=='o' &&
-                                  buf[j+4]=='t' && buf[j+5]==';') {
-                                    buf[j]='"';
-                                    System.arraycopy(buf, j+6, buf, j+1, len-j-6);
-                                    len-=5;
-                                }
-                                continue;
-                            }
-                        }
-                    }
-                }
- */
+                        buf[i+4]=='o' && buf[i+5]=='r' && buf[i+6]=='d' &&
+                        buf[i+7]=='D' && buf[i+8]=='a' && buf[i+9]=='t' &&
+                        buf[i+10]=='a') {
+                          startRecordData = true;
+                      }
+            }
+            if(startRecordData && buf[i]=='>' && len-1>1) {
+                startRecordData = false;
+                inRecordData = true;
+            }
+            if(inRecordData && buf[i]=='<' && len-1>11) {
+                // might be "</recordData>"
+                if(buf[i+1]=='/' && buf[i+2]=='r' && buf[i+3]=='e' && buf[i+4]=='c' &&
+                        buf[i+5]=='o' && buf[i+6]=='r' && buf[i+7]=='d' &&
+                        buf[i+8]=='D' && buf[i+9]=='a' && buf[i+10]=='t' &&
+                        buf[i+11]=='a') {
+                          inRecordData = false;
+                      }
+            }
+
         }
         return new String(buf, 0, len);
     }
