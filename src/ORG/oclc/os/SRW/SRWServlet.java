@@ -1463,7 +1463,7 @@ public class SRWServlet extends AxisServlet {
                     continue;
                 }
 
-            if(!inRecordData && buf[i]=='<' && len-1>11) {
+            if(buf[i]=='<' && len-1>11) {
                 // might be "<recordData>"
                 if(buf[i+1]=='r' && buf[i+2]=='e' && buf[i+3]=='c' &&
                         buf[i+4]=='o' && buf[i+5]=='r' && buf[i+6]=='d' &&
@@ -1472,11 +1472,15 @@ public class SRWServlet extends AxisServlet {
                           startRecordData = true;
                       }
             }
-            if(startRecordData && buf[i]=='>' && len-1>1) {
+            if(startRecordData && buf[i]=='>') {
                 startRecordData = false;
                 inRecordData = true;
             }
-            if(inRecordData && buf[i]=='<' && len-1>11) {
+            if(startRecordData && buf[i]=='/') {
+                startRecordData = false;
+                inRecordData = false;
+            }
+            if(inRecordData && buf[i]=='<' && len-1>12) {
                 // might be "</recordData>"
                 if(buf[i+1]=='/' && buf[i+2]=='r' && buf[i+3]=='e' && buf[i+4]=='c' &&
                         buf[i+5]=='o' && buf[i+6]=='r' && buf[i+7]=='d' &&
