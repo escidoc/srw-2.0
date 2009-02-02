@@ -50,6 +50,7 @@ import java.util.regex.Pattern;
 import org.apache.axis.types.NonNegativeInteger;
 import org.apache.axis.types.PositiveInteger;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -95,13 +96,26 @@ import de.escidoc.sb.srw.lucene.sorting.EscidocSearchResultComparator;
  */
 public class EscidocLuceneTranslator extends EscidocTranslator {
 
+    //custom lucene analyzer
     public static final String PROPERTY_ANALYZER = "cqlTranslator.analyzer";
 
+    //Class to generate highlight-snippets
     public static final String PROPERTY_HIGHLIGHTER =
         "cqlTranslator.highlighterClass";
 
+    //used for custom sorting
     public static final String PROPERTY_COMPARATOR =
         "cqlTranslator.sortComparator";
+    
+    //defines additional xml-search-result snippets
+    //snippets are read from fields with name defined in this property
+    public static final String PROPERTY_IDENTIFIER_QUERY_PARAMETER = 
+        "cqlTranslator.identifierQueryParameter";
+
+    //defines the name of the element to pack IDENTIFIER_QUERY_PARAMETER
+    //in search-result-hit
+    public static final String PROPERTY_IDENTIFIER_QUERY_PARAMETER_ELEMENT = 
+        "cqlTranslator.identifierQueryParameterElement";
 
     private static final Pattern namespacePattern = 
     				Pattern.compile("(?s)<([^>]*?):");
@@ -114,6 +128,12 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
 
     private static Matcher firstelementMatcher = 
     				firstelementPattern.matcher("");
+
+    private static final Pattern lastelementPattern = 
+        Pattern.compile("(?s)(.*)(<[^>]*?>)");
+
+    private static Matcher lastelementMatcher = 
+                    lastelementPattern.matcher("");
 
     /**
      * SrwHighlighter.
@@ -174,6 +194,46 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      */
     public void setComparator(final SortComparatorSource inp) {
     	comparator = inp;
+    }
+
+    /**
+     * identifierQueryParameter.
+     */
+    private String identifierQueryParameter;
+
+    /**
+     * @return String identifierQueryParameter.
+     */
+    public String getIdentifierQueryParameter() {
+        return identifierQueryParameter;
+    }
+
+    /**
+     * @param inp
+     *            identifierQueryParameter.
+     */
+    public void setIdentifierQueryParameter(final String inp) {
+        identifierQueryParameter = inp;
+    }
+
+    /**
+     * identifierQueryParameterElement.
+     */
+    private String identifierQueryParameterElement;
+
+    /**
+     * @return String identifierQueryParameterElement.
+     */
+    public String getIdentifierQueryParameterElement() {
+        return identifierQueryParameterElement;
+    }
+
+    /**
+     * @param inp
+     *            identifierQueryParameter.
+     */
+    public void setIdentifierQueryParameterElement(final String inp) {
+        identifierQueryParameterElement = inp;
     }
 
     /**
@@ -243,6 +303,11 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         temp = (String) properties.get(PROPERTY_IDENTIFIER_TERM);
         if (temp != null && temp.trim().length() != 0) {
             setIdentifierTerm(temp);
+        }
+
+        temp = (String) properties.get(PROPERTY_IDENTIFIER_QUERY_PARAMETER);
+        if (temp != null && temp.trim().length() != 0) {
+            setIdentifierQueryParameter(temp);
         }
 
         temp = (String) properties.get(PROPERTY_HIGHLIGHTER);
@@ -405,7 +470,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 }
                 Field idField = doc.getField(getIdentifierTerm());
                 if (idField != null) {
-                    identifiers[i] = createIdentifier(doc, idField);
+                    identifiers[i] = createIdentifier(doc, idField, query);
                 }
             }
         }
@@ -632,13 +697,15 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      *            Lucene Hit-Document
      * @param idField
      *            Field that holds the primary key of the Object
+     * @param query
+     *            Lucene Query Object
      * @return String Replaced String
      * @throws Exception
      *             e
      * 
      * @sb
      */
-    private String createIdentifier(final Document doc, final Field idField)
+    private String createIdentifier(final Document doc, final Field idField, final Query query)
         throws Exception {
         String idFieldStr = null;
         if (idField != null) {
@@ -648,8 +715,37 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         	if (idFieldStr.trim().startsWith("&")) {
                 idFieldStr = StringEscapeUtils.unescapeXml(idFieldStr);
         	}
+        	if (getIdentifierQueryParameter() != null) {
+                String queryString = query.toString();
+        	    if (queryString.matches(
+        	            ".*" + getIdentifierQueryParameter() + ".*")) {
+        	        //extract search-string for parameter
+        	        String fieldName = queryString.replaceAll(
+        	                ".*?" + getIdentifierQueryParameter() 
+        	                + ":\\s*?([^\\s]*?).*", "$1");
+                    //append value of stored field to search-result-hit
+                    String identifierQueryParameterElement;
+                    if (StringUtils.isNotEmpty(getIdentifierQueryParameterElement())) {
+                        identifierQueryParameterElement = getIdentifierQueryParameterElement();
+                    } else {
+                        identifierQueryParameterElement = "parameter";
+                    }
+                    Field[] fields = doc.getFields(fieldName);
+                    for (int i = 0; i < fields.length; i++) {
+                        Field field = fields[i];
+                        String fieldStr = field.stringValue();
+                        if (fieldStr.trim().startsWith("&")) {
+                            fieldStr = StringEscapeUtils.unescapeXml(fieldStr);
+                        }
+                        fieldStr = "<" + identifierQueryParameterElement + ">" + fieldStr 
+                                    + "</" + identifierQueryParameterElement + ">";
+                        lastelementMatcher.reset(idFieldStr);
+                        idFieldStr = lastelementMatcher.replaceFirst("$1" + fieldStr + "$2");
+                    }
+        	    }
+        	}
             if (highlighter != null) {
-                String nsName;
+                String nsName = null;
                 namespaceMatcher.reset(idFieldStr);
                 if (namespaceMatcher.find()) {
                     nsName = namespaceMatcher.group(1);
