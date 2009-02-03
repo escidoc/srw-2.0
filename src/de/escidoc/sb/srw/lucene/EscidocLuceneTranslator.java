@@ -310,6 +310,11 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             setIdentifierQueryParameter(temp);
         }
 
+        temp = (String) properties.get(PROPERTY_IDENTIFIER_QUERY_PARAMETER_ELEMENT);
+        if (temp != null && temp.trim().length() != 0) {
+            setIdentifierQueryParameterElement(temp);
+        }
+
         temp = (String) properties.get(PROPERTY_HIGHLIGHTER);
         if (temp != null && temp.trim().length() != 0) {
             try {
@@ -470,7 +475,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 }
                 Field idField = doc.getField(getIdentifierTerm());
                 if (idField != null) {
-                    identifiers[i] = createIdentifier(doc, idField, query);
+                    identifiers[i] = createIdentifier(doc, idField, queryRoot);
                 }
             }
         }
@@ -705,8 +710,11 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      * 
      * @sb
      */
-    private String createIdentifier(final Document doc, final Field idField, final Query query)
-        throws Exception {
+    private String createIdentifier(
+                            final Document doc, 
+                            final Field idField, 
+                            final CQLNode query)
+                                throws Exception {
         String idFieldStr = null;
         if (idField != null) {
             idFieldStr = idField.stringValue();
@@ -716,33 +724,34 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 idFieldStr = StringEscapeUtils.unescapeXml(idFieldStr);
         	}
         	if (getIdentifierQueryParameter() != null) {
-                String queryString = query.toString();
-        	    if (queryString.matches(
-        	            ".*" + getIdentifierQueryParameter() + ".*")) {
-        	        //extract search-string for parameter
-        	        String fieldName = queryString.replaceAll(
-        	                ".*?" + getIdentifierQueryParameter() 
-        	                + ":\\s*?([^\\s]*?).*", "$1");
-                    //append value of stored field to search-result-hit
+                HashMap terms = getQueryTerms(query);
+                if (terms != null && terms.get(getIdentifierQueryParameter()) != null) {
                     String identifierQueryParameterElement;
                     if (StringUtils.isNotEmpty(getIdentifierQueryParameterElement())) {
                         identifierQueryParameterElement = getIdentifierQueryParameterElement();
                     } else {
                         identifierQueryParameterElement = "parameter";
                     }
-                    Field[] fields = doc.getFields(fieldName);
-                    for (int i = 0; i < fields.length; i++) {
-                        Field field = fields[i];
-                        String fieldStr = field.stringValue();
-                        if (fieldStr.trim().startsWith("&")) {
-                            fieldStr = StringEscapeUtils.unescapeXml(fieldStr);
+                    for (String fieldName : (ArrayList<String>)terms
+                                .get(getIdentifierQueryParameter())) {
+                        Field[] fields = doc.getFields(fieldName);
+                        if (fields != null) {
+                            for (int i = 0; i < fields.length; i++) {
+                                Field field = fields[i];
+                                String fieldStr = field.stringValue();
+                                if (fieldStr.trim().startsWith("&")) {
+                                    fieldStr = StringEscapeUtils.unescapeXml(fieldStr);
+                                }
+                                fieldStr = "<" + identifierQueryParameterElement + ">" + fieldStr 
+                                            + "</" + identifierQueryParameterElement + ">";
+                                lastelementMatcher.reset(idFieldStr);
+                                idFieldStr = lastelementMatcher.replaceFirst(
+                                        "$1" + Matcher.quoteReplacement(fieldStr) + "$2");
+                            }
                         }
-                        fieldStr = "<" + identifierQueryParameterElement + ">" + fieldStr 
-                                    + "</" + identifierQueryParameterElement + ">";
-                        lastelementMatcher.reset(idFieldStr);
-                        idFieldStr = lastelementMatcher.replaceFirst("$1" + fieldStr + "$2");
+                        
                     }
-        	    }
+                }
         	}
             if (highlighter != null) {
                 String nsName = null;
