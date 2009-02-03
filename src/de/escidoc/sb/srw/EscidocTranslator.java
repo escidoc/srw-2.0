@@ -33,7 +33,9 @@ import gov.loc.www.zing.srw.ExtraDataType;
 import gov.loc.www.zing.srw.SearchRetrieveRequestType;
 import gov.loc.www.zing.srw.TermType;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -481,5 +483,198 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 		}
 		return query;
 	}
+
+    /**
+     * Get Collection of query-terms.
+     * 
+     * @param node
+     *            CQLNode
+     * @return Query query
+     * @throws SRWDiagnostic
+     *             e
+     * 
+     * @sb
+     */
+    public HashMap getQueryTerms(final CQLNode node) throws SRWDiagnostic {
+        return getQueryTerms(node, null);
+    }
+
+    /**
+     * Get Collection of query-terms.
+     * 
+     * @param node
+     *            CQLNode
+     * @param leftQuery
+     *            Query
+     * @return Query query
+     * @throws SRWDiagnostic
+     *             e
+     * 
+     * @sb
+     */
+    public HashMap getQueryTerms(final CQLNode node, final HashMap leftQuery)
+            throws SRWDiagnostic {
+        Query query = null;
+        HashMap returnMap = leftQuery;
+        if (returnMap == null) {
+            returnMap = new HashMap();
+        }
+
+        if (node instanceof CQLBooleanNode) {
+            CQLBooleanNode cbn = (CQLBooleanNode) node;
+
+            HashMap left = getQueryTerms(cbn.left);
+            returnMap.putAll(left);
+            HashMap right = getQueryTerms(cbn.right, left);
+            returnMap.putAll(right);
+            if (node instanceof CQLAndNode) {
+                query = new BooleanQuery();
+                log.debug("  Anding left and right in new query");
+                AndQuery((BooleanQuery) query, (Query)left.get("query"));
+                AndQuery((BooleanQuery) query, (Query)right.get("query"));
+
+            } else if (node instanceof CQLNotNode) {
+
+                query = new BooleanQuery();
+                log.debug("  Notting left and right in new query");
+                AndQuery((BooleanQuery) query, (Query)left.get("query"));
+                NotQuery((BooleanQuery) query, (Query)right.get("query"));
+
+            } else if (node instanceof CQLOrNode) {
+                log.debug("  Or'ing left and right in new query");
+                query = new BooleanQuery();
+                OrQuery((BooleanQuery) query, (Query)left.get("query"));
+                OrQuery((BooleanQuery) query, (Query)right.get("query"));
+            } else {
+                throw new RuntimeException("Unknown boolean");
+            }
+
+        } else if (node instanceof CQLTermNode) {
+            CQLTermNode ctn = (CQLTermNode) node;
+
+            // /////////////////////////////////////////////////////////////////
+            // MIH get modifiers////////////////////////////////////////////////
+            String[] modifiers = ctn.getRelation().getModifiers();
+            String modifier = "";
+            for (int i = 0; i < modifiers.length; i++) {
+                if (modifiers[i].equalsIgnoreCase("fuzzy")) {
+                    modifier = "~";
+                }
+            }
+            // /////////////////////////////////////////////////////////////////
+
+            String relation = ctn.getRelation().getBase();
+            // MIH scr doesnt work with LuceneTranslator////////////////////////
+            if (relation.equalsIgnoreCase("scr")) {
+                relation = "=";
+            }
+            // /////////////////////////////////////////////////////////////////
+            String index = ctn.getQualifier();
+            if (returnMap.get(index) == null) {
+                returnMap.put(index, new ArrayList<String>());
+            }
+            ((ArrayList<String>)returnMap.get(index)).add(ctn.getTerm());
+
+            if (!index.equals("")) {
+                if (relation.equals("=") || relation.equals("scr")) {
+                    query = createTermQuery(index, ctn.getTerm() + modifier,
+                            relation);
+                } else if (relation.equals("<")) {
+                    Term term = new Term(index, ctn.getTerm() + modifier);
+                    if (term.text() == null || term.text().equals("")) {
+                        term = term.createTerm("0");
+                    }
+                    // term is upperbound, exclusive
+                    query = new RangeQuery(new Term(term.field(), "0"), term,
+                            false);
+                } else if (relation.equals(">")) {
+                    Term term = new Term(index, ctn.getTerm() + modifier);
+                    if (term.text() == null || term.text().equals("")) {
+                        term = term.createTerm("0");
+                    }
+                    // term is lowerbound, exclusive
+                    query = new RangeQuery(term, new Term(term.field(),
+                            "ZZZZZZZZZZZZZZZ"), false);
+                } else if (relation.equals("<=")) {
+                    Term term = new Term(index, ctn.getTerm() + modifier);
+                    if (term.text() == null || term.text().equals("")) {
+                        term = term.createTerm("0");
+                    }
+                    // term is upperbound, inclusive
+                    query = new RangeQuery(new Term(term.field(), "0"), term,
+                            true);
+                } else if (relation.equals(">=")) {
+                    Term term = new Term(index, ctn.getTerm() + modifier);
+                    if (term.text() == null || term.text().equals("")) {
+                        term = term.createTerm("0");
+                    }
+                    // term is lowebound, inclusive
+                    query = new RangeQuery(term, new Term(term.field(),
+                            "ZZZZZZZZZZZZZZZ"), true);
+
+                } else if (relation.equals("<>")) {
+                    /**
+                     * <> is an implicit NOT.
+                     * 
+                     * For example the following statements are identical
+                     * results: foo=bar and zoo<>xar foo=bar not zoo=xar
+                     */
+
+                    if (leftQuery == null) {
+                        // first term in query
+                        // create an empty Boolean query to NOT
+                        query = new BooleanQuery();
+                    } else {
+                        if ((Query)leftQuery.get("query") instanceof BooleanQuery) {
+                            // left query is already a BooleanQuery use it
+                            query = (Query)leftQuery.get("query");
+                        } else {
+                            // left query was not a boolean,
+                            // create a boolean query
+                            // and AND the left query to it
+                            query = new BooleanQuery();
+                            AndQuery((BooleanQuery) query, (Query)leftQuery.get("query"));
+                        }
+                    }
+                    // create a term query for the term
+                    // then NOT it to the boolean query
+                    Query termQuery = createTermQuery(index, ctn.getTerm()
+                            + modifier, relation);
+                    NotQuery((BooleanQuery) query, termQuery);
+
+                } else if (relation.equals("any")) {
+                    // implicit or
+                    query = createTermQuery(index, ctn.getTerm() + modifier,
+                            relation);
+
+                } else if (relation.equals("all")) {
+                    // implicit and
+                    query = createTermQuery(index, ctn.getTerm() + modifier,
+                            relation);
+                } else if (relation.equals("exact")) {
+                    /**
+                     * implicit and. this query will only return accurate
+                     * results for indexes that have been indexed using a
+                     * non-tokenizing analyzer
+                     */
+                    query = createTermQuery(index, ctn.getTerm() + modifier,
+                            relation);
+                } else {
+                    // anything else is unsupported
+                    throw new SRWDiagnostic(DIAGNOSTIC_CODE_NINETEEN, ctn
+                            .getRelation().getBase());
+                }
+
+            }
+        } else {
+            throw new SRWDiagnostic(DIAGNOSTIC_CODE_FOURTYSEVEN,
+                    "UnknownCQLNode: " + node + ")");
+        }
+        if (query != null) {
+            log.info("Query : " + query.toString());
+        }
+        returnMap.put("query", query);
+        return returnMap;
+    }
 
 }
