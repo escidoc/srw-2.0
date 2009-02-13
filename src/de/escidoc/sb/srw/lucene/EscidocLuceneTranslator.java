@@ -334,7 +334,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 new EscidocQueryParser(getDefaultIndexField(), analyzer);
             Query query = parser.parse(unanalyzedQuery.toString());
             
-            //execute wildcard-queries with lower maxClauseCount
+            //execute fuzzy-queries with lower maxClauseCount
             if (query.toString().indexOf("~") > -1) {
                 BooleanQuery.setMaxClauseCount(
                         Constants.BOOLEAN_MAX_CLAUSE_COUNT/100);
