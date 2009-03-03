@@ -40,7 +40,7 @@ public class Constants {
 
     public static final String CHARACTER_ENCODING = "UTF-8";
 
-    public static final int BOOLEAN_MAX_CLAUSE_COUNT = 100000000;
+    public static final int FUZZY_BOOLEAN_MAX_CLAUSE_COUNT = 10000;
     
     public static final Pattern CONTEXT_SET_PATTERN = Pattern.compile("contextSet\\.(.*)");
 

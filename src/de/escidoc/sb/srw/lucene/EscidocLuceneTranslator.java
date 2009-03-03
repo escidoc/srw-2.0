@@ -313,7 +313,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         final CQLNode queryRoot, final ExtraDataType extraDataType,
         final SearchRetrieveRequestType request) throws SRWDiagnostic {
         // Increase maxClauseCount of BooleanQuery for Wildcard-Searches
-        BooleanQuery.setMaxClauseCount(Constants.BOOLEAN_MAX_CLAUSE_COUNT);
+        BooleanQuery.setMaxClauseCount(Integer.MAX_VALUE);
 
         // Get Lucene Sort-Object
         Sort sort = getLuceneSortObject(request.getSortKeys());
@@ -337,7 +337,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             //execute fuzzy-queries with lower maxClauseCount
             if (query.toString().indexOf("~") > -1) {
                 BooleanQuery.setMaxClauseCount(
-                        Constants.BOOLEAN_MAX_CLAUSE_COUNT/100);
+                        Constants.FUZZY_BOOLEAN_MAX_CLAUSE_COUNT);
             }
 
             log.info("escidoc lucene search=" + query);
