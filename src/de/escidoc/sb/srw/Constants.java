@@ -54,4 +54,55 @@ public class Constants {
 
     public static final String XML_HIT_PATH = "/hits/hit";
 
+    //custom lucene analyzer
+    public static final String PROPERTY_ANALYZER = "cqlTranslator.analyzer";
+
+    //Class to generate highlight-snippets
+    public static final String PROPERTY_HIGHLIGHTER =
+        "cqlTranslator.highlighterClass";
+
+    //Class to generate xml from highlight-snippets
+    public static final String PROPERTY_HIGHLIGHT_XMLIZER =
+        "cqlTranslator.highlightXmlizerClass";
+
+    //used for custom sorting
+    public static final String PROPERTY_COMPARATOR =
+        "cqlTranslator.sortComparator";
+    
+    public static final String PROPERTY_HIGHLIGHT_TERM_FULLTEXT =
+        "cqlTranslator.highlightTermFulltext";
+
+    public static final String PROPERTY_HIGHLIGHT_TERM_FULLTEXT_ITERABLE =
+        "cqlTranslator.highlightTermFulltextIterable";
+
+    public static final String PROPERTY_HIGHLIGHT_TERM_FILENAME =
+        "cqlTranslator.highlightTermFilename";
+
+    public static final String PROPERTY_HIGHLIGHT_TERM_METADATA =
+        "cqlTranslator.highlightTermMetadata";
+
+    public static final String PROPERTY_HIGHLIGHT_TERM_METADATA_ITERABLE =
+        "cqlTranslator.highlightTermMetadataIterable";
+
+    public static final String PROPERTY_DEFAULT_INDEX_FIELD =
+        "cqlTranslator.defaultIndexField";
+
+    public static final String PROPERTY_FULLTEXT_INDEX_FIELD =
+        "cqlTranslator.fulltextIndexField";
+
+    public static final String PROPERTY_HIGHLIGHT_START_MARKER =
+        "cqlTranslator.highlightStartMarker";
+
+    public static final String PROPERTY_HIGHLIGHT_END_MARKER =
+        "cqlTranslator.highlightEndMarker";
+
+    public static final String PROPERTY_HIGHLIGHT_FRAGMENT_SIZE =
+        "cqlTranslator.highlightFragmentSize";
+
+    public static final String PROPERTY_HIGHLIGHT_MAX_FRAGMENTS =
+        "cqlTranslator.highlightMaxFragments";
+
+    public static final String PROPERTY_HIGHLIGHT_FRAGMENT_SEPARATOR =
+        "cqlTranslator.highlightFragmentSeparator";
+
 }

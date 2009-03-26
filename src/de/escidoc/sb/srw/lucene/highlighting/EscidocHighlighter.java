@@ -34,13 +34,15 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.SimpleAnalyzer;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
@@ -53,6 +55,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 import de.escidoc.core.common.util.configuration.EscidocConfiguration;
+import de.escidoc.sb.srw.Constants;
 
 /**
  * Class implements lucene-highlighting of configurable lucene-fields.
@@ -62,62 +65,19 @@ import de.escidoc.core.common.util.configuration.EscidocConfiguration;
  */
 public class EscidocHighlighter implements SrwHighlighter {
 
-    //*************Variables from properties-file****************************
-	public static final String PROPERTY_ANALYZER = "cqlTranslator.analyzer";
-
-    public static final String PROPERTY_HIGHLIGHT_TERM_FULLTEXT =
-        "cqlTranslator.highlightTermFulltext";
-
-    public static final String PROPERTY_HIGHLIGHT_TERM_FULLTEXT_ITERABLE =
-        "cqlTranslator.highlightTermFulltextIterable";
-
-    public static final String PROPERTY_HIGHLIGHT_TERM_FILENAME =
-        "cqlTranslator.highlightTermFilename";
-
-    public static final String PROPERTY_HIGHLIGHT_TERM_METADATA =
-        "cqlTranslator.highlightTermMetadata";
-
-    public static final String PROPERTY_HIGHLIGHT_TERM_METADATA_ITERABLE =
-        "cqlTranslator.highlightTermMetadataIterable";
-
-    public static final String PROPERTY_HIGHLIGHT_TERM_PROPERTIES =
-        "cqlTranslator.highlightTermProperties";
-
-    public static final String PROPERTY_DEFAULT_INDEX_FIELD =
-        "cqlTranslator.defaultIndexField";
-
-    public static final String PROPERTY_FULLTEXT_INDEX_FIELD =
-        "cqlTranslator.fulltextIndexField";
-
-    public static final String PROPERTY_HIGHLIGHT_START_MARKER =
-        "cqlTranslator.highlightStartMarker";
-
-    public static final String PROPERTY_HIGHLIGHT_END_MARKER =
-        "cqlTranslator.highlightEndMarker";
-
-    public static final String PROPERTY_HIGHLIGHT_FRAGMENT_SIZE =
-        "cqlTranslator.highlightFragmentSize";
-
-    public static final String PROPERTY_HIGHLIGHT_MAX_FRAGMENTS =
-        "cqlTranslator.highlightMaxFragments";
-
-    public static final String PROPERTY_HIGHLIGHT_FRAGMENT_SEPARATOR =
-        "cqlTranslator.highlightFragmentSeparator";
-
-    public static final String PROPERTY_HIGHLIGHTER =
-        "cqlTranslator.highlighterClass";
-    //*************************************************************************
-
     //********Defaults*********************************************************
     private Highlighter highlighter = null;
 
-    private Analyzer analyzer = new SimpleAnalyzer();
+    private Analyzer analyzer = new StandardAnalyzer();
+    
+    private SrwHighlightXmlizer highlightXmlizer = 
+                    new EscidocSimpleHighlightXmlizer();
 
-    private String highlightStartMarker = "<B>";
+    private String highlightStartMarker = "<escidoc-highlight-start>";
 
-    private String highlightEndMarker = "</B>";
+    private String highlightEndMarker = "<escidoc-highlight-end>";
 
-    private String highlightFragmentSeparator = "...";
+    private String highlightFragmentSeparator = "<escidoc-fragment-separator>";
 
     private int highlightFragmentSize = 100;
 
@@ -138,6 +98,11 @@ public class EscidocHighlighter implements SrwHighlighter {
 
     private HashSet<String> searchFields = new HashSet<String>();
 
+    private final Pattern SEARCHFIELD_PATTERN = 
+                    Pattern.compile("([^\\s\\\\:]+?):");
+
+    private Matcher SEARCHFIELD_MATCHER = SEARCHFIELD_PATTERN.matcher("");
+
     private static Log log = LogFactory.getLog(EscidocHighlighter.class);
 
     /**
@@ -151,75 +116,91 @@ public class EscidocHighlighter implements SrwHighlighter {
     public void setProperties(final Properties props) {
         String temp;
 
-        temp = (String) props.get(PROPERTY_ANALYZER);
+        temp = (String) props.get(Constants.PROPERTY_ANALYZER);
+        try {
+            //Try to get Analyzer from escidoc-configuration
+            String analyzerStr = EscidocConfiguration.getInstance()
+            .get(
+                EscidocConfiguration.LUCENE_ANALYZER, temp);
+            if (analyzerStr != null && analyzerStr.trim().length() != 0) {
+                analyzer = (Analyzer) Class.forName(analyzerStr).newInstance();
+            } else {
+                analyzer = new StandardAnalyzer();
+            }
+        }
+        catch (Exception e) {
+            log.error(e);
+            analyzer = new StandardAnalyzer();
+        }
+
+        temp = (String) props.get(Constants.PROPERTY_HIGHLIGHT_XMLIZER);
         if (temp != null && temp.trim().length() != 0) {
             try {
-                //Try to get Analyzer from escidoc-configuration
-                String analyzerStr = EscidocConfiguration.getInstance()
-                .get(
-                    EscidocConfiguration.LUCENE_ANALYZER, temp);
-                analyzer = (Analyzer) Class.forName(analyzerStr).newInstance();
+                highlightXmlizer =
+                    (SrwHighlightXmlizer) Class.forName(temp).newInstance();
             }
             catch (Exception e) {
                 log.error(e);
+                highlightXmlizer = new EscidocSimpleHighlightXmlizer();
             }
         }
-        temp = (String) props.get(PROPERTY_HIGHLIGHT_START_MARKER);
+
+        temp = (String) props.get(Constants.PROPERTY_HIGHLIGHT_START_MARKER);
         if (temp != null && temp.trim().length() != 0) {
             highlightStartMarker =
-                props.getProperty(PROPERTY_HIGHLIGHT_START_MARKER);
+                props.getProperty(Constants.PROPERTY_HIGHLIGHT_START_MARKER);
         }
-        temp = (String) props.get(PROPERTY_HIGHLIGHT_END_MARKER);
+        temp = (String) props.get(Constants.PROPERTY_HIGHLIGHT_END_MARKER);
         if (temp != null && temp.trim().length() != 0) {
             highlightEndMarker =
-                props.getProperty(PROPERTY_HIGHLIGHT_END_MARKER);
+                props.getProperty(Constants.PROPERTY_HIGHLIGHT_END_MARKER);
         }
-        temp = (String) props.get(PROPERTY_HIGHLIGHT_FRAGMENT_SEPARATOR);
+        temp = (String) props.get(Constants.PROPERTY_HIGHLIGHT_FRAGMENT_SEPARATOR);
         if (temp != null && temp.trim().length() != 0) {
             highlightFragmentSeparator =
-                props.getProperty(PROPERTY_HIGHLIGHT_FRAGMENT_SEPARATOR);
+                props.getProperty(Constants.PROPERTY_HIGHLIGHT_FRAGMENT_SEPARATOR);
         }
-        temp = (String) props.get(PROPERTY_HIGHLIGHT_FRAGMENT_SIZE);
+        temp = (String) props.get(Constants.PROPERTY_HIGHLIGHT_FRAGMENT_SIZE);
         if (temp != null && temp.trim().length() != 0) {
             highlightFragmentSize =
-                new Integer(props.getProperty(PROPERTY_HIGHLIGHT_FRAGMENT_SIZE))
+                new Integer(props.getProperty(Constants.PROPERTY_HIGHLIGHT_FRAGMENT_SIZE))
                     .intValue();
         }
-        temp = (String) props.get(PROPERTY_HIGHLIGHT_MAX_FRAGMENTS);
+        temp = (String) props.get(Constants.PROPERTY_HIGHLIGHT_MAX_FRAGMENTS);
         if (temp != null && temp.trim().length() != 0) {
             highlightMaxFragments =
-                new Integer(props.getProperty(PROPERTY_HIGHLIGHT_MAX_FRAGMENTS))
+                new Integer(props.getProperty(Constants.PROPERTY_HIGHLIGHT_MAX_FRAGMENTS))
                     .intValue();
         }
-        temp = (String) props.get(PROPERTY_FULLTEXT_INDEX_FIELD);
+        temp = (String) props.get(Constants.PROPERTY_FULLTEXT_INDEX_FIELD);
         if (temp != null && temp.trim().length() != 0) {
             fulltextIndexField =
-                props.getProperty(PROPERTY_FULLTEXT_INDEX_FIELD);
+                props.getProperty(Constants.PROPERTY_FULLTEXT_INDEX_FIELD);
         }
-        temp = (String) props.get(PROPERTY_HIGHLIGHT_TERM_FULLTEXT);
+        temp = (String) props.get(Constants.PROPERTY_HIGHLIGHT_TERM_FULLTEXT);
         if (temp != null && temp.trim().length() != 0) {
             highlightFulltextField =
-                props.getProperty(PROPERTY_HIGHLIGHT_TERM_FULLTEXT);
+                props.getProperty(Constants.PROPERTY_HIGHLIGHT_TERM_FULLTEXT);
         }
-        temp = (String) props.get(PROPERTY_HIGHLIGHT_TERM_FILENAME);
+        temp = (String) props.get(Constants.PROPERTY_HIGHLIGHT_TERM_FILENAME);
         if (temp != null && temp.trim().length() != 0) {
             highlightFulltextFilenameField =
-                props.getProperty(PROPERTY_HIGHLIGHT_TERM_FILENAME);
+                props.getProperty(Constants.PROPERTY_HIGHLIGHT_TERM_FILENAME);
         }
-        temp = (String) props.get(PROPERTY_HIGHLIGHT_TERM_FULLTEXT_ITERABLE);
+        temp = (String) props.get(Constants.PROPERTY_HIGHLIGHT_TERM_FULLTEXT_ITERABLE);
         if (temp != null && temp.trim().length() != 0) {
             highlightFulltextFieldIterable =
-                props.getProperty(PROPERTY_HIGHLIGHT_TERM_FULLTEXT_ITERABLE);
+                props.getProperty(Constants.PROPERTY_HIGHLIGHT_TERM_FULLTEXT_ITERABLE);
         }
-        temp = (String) props.get(PROPERTY_HIGHLIGHT_TERM_METADATA);
+        temp = (String) props.get(Constants.PROPERTY_HIGHLIGHT_TERM_METADATA);
         if (temp != null && temp.trim().length() != 0) {
             highlightMetadataField =
-                props.getProperty(PROPERTY_HIGHLIGHT_TERM_METADATA);
+                props.getProperty(Constants.PROPERTY_HIGHLIGHT_TERM_METADATA);
         }
-        temp = (String) props.get(PROPERTY_HIGHLIGHT_TERM_METADATA_ITERABLE);
+        temp = (String) props.get(Constants.PROPERTY_HIGHLIGHT_TERM_METADATA_ITERABLE);
         if (temp != null && temp.trim().length() != 0) {
             highlightMetadataFieldIterable =
-                props.getProperty(PROPERTY_HIGHLIGHT_TERM_METADATA_ITERABLE);
+                props.getProperty(Constants.PROPERTY_HIGHLIGHT_TERM_METADATA_ITERABLE);
         }
     }
 
@@ -238,21 +219,38 @@ public class EscidocHighlighter implements SrwHighlighter {
      */
     public void initialize(final String indexPath, final Query query)
         throws Exception {
+
+        //reinitialize highlightXmlizer
+        highlightXmlizer =
+            highlightXmlizer.getClass().newInstance();
+        
         Query replacedQuery = query;
         searchFields = new HashSet<String>();
         if (indexPath != null && indexPath.trim().length() != 0
-            && query != null) {
+            && query != null && query.toString() != null) {
+
             // get search-fields from query////////////////////////////////////
-        	// always highlight stored metadata
-            searchFields.add("metadata");
-            
-            // maybe highlight stored fulltext
-            if (fulltextIndexField != null
-                && fulltextIndexField.trim().length() != 0) {
-                String queryString = query.toString();
-                if (queryString.matches(".*" + fulltextIndexField + ".*")) {
-                    searchFields.add("fulltext");
+            SEARCHFIELD_MATCHER.reset(query.toString());
+            boolean fulltextFound = false;
+            boolean nonFulltextFound = false;
+            while (SEARCHFIELD_MATCHER.find()) {
+                if (SEARCHFIELD_MATCHER.group(1) != null
+                        && fulltextIndexField != null
+                        && SEARCHFIELD_MATCHER.group(1)
+                            .equals(fulltextIndexField)) {
+                    fulltextFound = true;
+                } else {
+                    nonFulltextFound = true;
                 }
+                if (fulltextFound && nonFulltextFound) {
+                    break;
+                }
+            }
+            if (fulltextFound) {
+                searchFields.add("fulltext");
+            }
+            if (nonFulltextFound) {
+                searchFields.add("metadata");
             }
             // ////////////////////////////////////////////////////////////////
 
@@ -322,14 +320,12 @@ public class EscidocHighlighter implements SrwHighlighter {
             return "";
         }
         HashMap<String, String> highlightFragmentData = null;
-        HighlightXmlizer highlightXmlizer =
-            new HighlightXmlizer(highlightFragmentSeparator,
-                highlightStartMarker, highlightEndMarker);
+        highlightXmlizer.setProperties(getCustomProperties());
         // If search-field was fulltext, highlight fulltext/////////
         if (searchFields.contains("fulltext")
             && highlightFulltextField != null
             && highlightFulltextField.trim().length() != 0) {
-            if (highlightFulltextFieldIterable.equalsIgnoreCase("false")) {
+            if (!highlightFulltextFieldIterable.equalsIgnoreCase("true")) {
                 try {
                     highlightFragmentData =
                         getHighlightData(highlightFulltextField,
@@ -370,7 +366,7 @@ public class EscidocHighlighter implements SrwHighlighter {
         if (searchFields.contains("metadata")
             && highlightMetadataField != null
             && highlightMetadataField.trim().length() != 0) {
-            if (highlightMetadataFieldIterable.equalsIgnoreCase("false")) {
+            if (!highlightMetadataFieldIterable.equalsIgnoreCase("true")) {
                 try {
                     highlightFragmentData =
                         getHighlightData(highlightMetadataField, null, doc,
@@ -405,20 +401,6 @@ public class EscidocHighlighter implements SrwHighlighter {
             }
 
         }
-        // /////////////////////////////////////////////////////////
-        // If search-field was properties, highlight properties/////////
-        // if (searchFields.contains("properties")) {
-        // try {
-        // highlightFragmentData = getHighlightData(
-        // highlightTermMetadata, null, doc, highlighter, "properties");
-        // if (highlightFragmentData != null) {
-        // highlightXmlizer.addHighlightFragmentData(highlightFragmentData);
-        // }
-        // } catch (Exception e) {
-        // log.error(e);
-        // }
-        // }
-        // /////////////////////////////////////////////////////////
         return highlightXmlizer.xmlize(namespacePrefix);
     }
 
@@ -449,6 +431,13 @@ public class EscidocHighlighter implements SrwHighlighter {
         final String fieldName, final String locatorFieldName,
         final Document doc, final Highlighter highlighterIn, final String type)
         throws IOException, NoSuchFieldException {
+        
+        //check values
+        if (fieldName == null || fieldName.trim().length() == 0
+                || type == null || type.trim().length() == 0) {
+            return null;
+        }
+        
         HashMap<String, String> highlightData = new HashMap<String, String>();
         highlightData.put("type", type);
         String highlightSnippet = null;
@@ -532,6 +521,23 @@ public class EscidocHighlighter implements SrwHighlighter {
                 out.append(current);
         }
         return out.toString();
-    }    
+    } 
+    
+    /**
+     * This method puts the generated properties (defaults + evtl overwritten)
+     * into a properties-Object.
+     *
+     * @return The Properties.
+     */
+    private Properties getCustomProperties() {
+        Properties props = new Properties();
+        props.put(Constants.PROPERTY_HIGHLIGHT_START_MARKER, 
+                                        highlightStartMarker);
+        props.put(Constants.PROPERTY_HIGHLIGHT_END_MARKER, 
+                                        highlightEndMarker);
+        props.put(Constants.PROPERTY_HIGHLIGHT_FRAGMENT_SEPARATOR, 
+                                        highlightFragmentSeparator);
+        return props;
+    }
     
 }

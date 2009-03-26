@@ -95,17 +95,6 @@ import de.escidoc.sb.srw.lucene.sorting.EscidocSearchResultComparator;
  */
 public class EscidocLuceneTranslator extends EscidocTranslator {
 
-    //custom lucene analyzer
-    public static final String PROPERTY_ANALYZER = "cqlTranslator.analyzer";
-
-    //Class to generate highlight-snippets
-    public static final String PROPERTY_HIGHLIGHTER =
-        "cqlTranslator.highlighterClass";
-
-    //used for custom sorting
-    public static final String PROPERTY_COMPARATOR =
-        "cqlTranslator.sortComparator";
-    
     private static final Pattern namespacePattern = 
     				Pattern.compile("(?s)<([^>]*?):");
     
@@ -163,7 +152,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      * Comparator for custom sorting of search-result.
      * Default: EscidocSearchResultComparator
      */
-    private SortComparatorSource comparator;
+    private SortComparatorSource comparator = null;
 
     /**
      * @return String comparator.
@@ -248,7 +237,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             setIdentifierTerm(temp);
         }
 
-        temp = (String) properties.get(PROPERTY_HIGHLIGHTER);
+        temp = (String) properties.get(Constants.PROPERTY_HIGHLIGHTER);
         if (temp != null && temp.trim().length() != 0) {
             try {
                 highlighter =
@@ -261,22 +250,24 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
         }
 
-        temp = (String) properties.get(PROPERTY_ANALYZER);
-        if (temp != null && temp.trim().length() != 0) {
-            try {
-                //Try to get Analyzer from escidoc-configuration
-                String analyzerStr = EscidocConfiguration.getInstance()
-                .get(
-                    EscidocConfiguration.LUCENE_ANALYZER, temp);
+        temp = (String) properties.get(Constants.PROPERTY_ANALYZER);
+        try {
+            //Try to get Analyzer from escidoc-configuration
+            String analyzerStr = EscidocConfiguration.getInstance()
+            .get(
+                EscidocConfiguration.LUCENE_ANALYZER, temp);
+            if (analyzerStr != null && analyzerStr.trim().length() != 0) {
                 analyzer = (Analyzer) Class.forName(analyzerStr).newInstance();
-            }
-            catch (Exception e) {
-                log.error(e);
+            } else {
                 analyzer = new StandardAnalyzer();
             }
         }
+        catch (Exception e) {
+            log.error(e);
+            analyzer = new StandardAnalyzer();
+        }
 
-        temp = (String) properties.get(PROPERTY_COMPARATOR);
+        temp = (String) properties.get(Constants.PROPERTY_COMPARATOR);
         if (temp != null && temp.trim().length() != 0) {
             try {
                 comparator = (SortComparatorSource) Class.forName(temp).newInstance();
@@ -670,7 +661,12 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 else {
                     nsName = "";
                 }
-                String highlight = highlighter.getFragments(doc, nsName);
+                String highlight = null;
+                try {
+                    highlight = highlighter.getFragments(doc, nsName);
+                } catch (Exception e) {
+                    log.error(e);
+                }
                 if (highlight != null && !highlight.equals("")) {
                 	firstelementMatcher.reset(idFieldStr);
                 	idFieldStr = firstelementMatcher.replaceFirst(
