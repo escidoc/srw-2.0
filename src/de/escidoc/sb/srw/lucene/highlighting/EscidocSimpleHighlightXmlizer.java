@@ -232,4 +232,13 @@ public class EscidocSimpleHighlightXmlizer implements SrwHighlightXmlizer{
         highlightFragmentDatas.add(highlightFragmentData);
     }
 
+    /**
+     * empties Collection of all highlifgtFragmentDatas.
+     * 
+     * @sb
+     */
+    public void clearHighlightFragmentData() {
+        highlightFragmentDatas.clear();
+    }
+
 }

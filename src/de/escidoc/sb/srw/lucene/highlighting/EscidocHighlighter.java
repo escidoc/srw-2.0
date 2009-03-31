@@ -220,10 +220,6 @@ public class EscidocHighlighter implements SrwHighlighter {
     public void initialize(final String indexPath, final Query query)
         throws Exception {
 
-        //reinitialize highlightXmlizer
-        highlightXmlizer =
-            highlightXmlizer.getClass().newInstance();
-        
         Query replacedQuery = query;
         searchFields = new HashSet<String>();
         if (indexPath != null && indexPath.trim().length() != 0
@@ -319,8 +315,12 @@ public class EscidocHighlighter implements SrwHighlighter {
         if (highlighter == null) {
             return "";
         }
-        HashMap<String, String> highlightFragmentData = null;
+
+        //clear highlightXmlizer fragment data
+        highlightXmlizer.clearHighlightFragmentData();
         highlightXmlizer.setProperties(getCustomProperties());
+        
+        HashMap<String, String> highlightFragmentData = null;
         // If search-field was fulltext, highlight fulltext/////////
         if (searchFields.contains("fulltext")
             && highlightFulltextField != null

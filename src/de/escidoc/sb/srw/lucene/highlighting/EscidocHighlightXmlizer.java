@@ -131,7 +131,8 @@ public class EscidocHighlightXmlizer implements SrwHighlightXmlizer{
                     }
                     xml.append(">");
                     String[] textFragments =
-                        textFragmentData.split(fragmentSeparator);
+                        textFragmentData.split(
+                                replaceForRegex(fragmentSeparator));
                     if (textFragments != null) {
                         for (int i = 0; i < textFragments.length; i++) {
                             xml.append(xmlizeTextFragment(textFragments[i],
@@ -170,7 +171,8 @@ public class EscidocHighlightXmlizer implements SrwHighlightXmlizer{
         StringBuffer replacedFragment = new StringBuffer("");
         if (textFragment != null) {
             String[] highlightFragments =
-                textFragment.split(highlightStartMarker);
+                textFragment.split(
+                        replaceForRegex(highlightStartMarker));
             if (highlightFragments != null && highlightFragments.length > 1) {
                 xml
                     .append("<").append(getNamespacePrefix(namespacePrefix))
@@ -184,7 +186,8 @@ public class EscidocHighlightXmlizer implements SrwHighlightXmlizer{
                         highlightFragment.indexOf(highlightEndMarker);
                     int end = offset + highlightEndMarkerIndex - 1;
                     highlightFragment =
-                        highlightFragment.replaceAll(highlightEndMarker, "");
+                        highlightFragment.replaceAll(
+                                replaceForRegex(highlightEndMarker), "");
                     replacedFragment.append(highlightFragment);
                     indexFields
                         .append("<")
@@ -237,16 +240,24 @@ public class EscidocHighlightXmlizer implements SrwHighlightXmlizer{
         String text = textFragment;
         if (text != null) {
             text =
-                text.replaceAll("(" + highlightStartMarker + ")([\\(\\)]+)",
+                text.replaceAll("("
+                        + replaceForRegex(highlightStartMarker) 
+                        + ")([\\(\\)]+)",
                     "$2$1");
             text =
-                text.replaceAll("([\\(\\)]+)(" + highlightEndMarker + ")",
+                text.replaceAll("([\\(\\)]+)(" 
+                        + replaceForRegex(highlightEndMarker) 
+                        + ")",
                     "$2$1");
             text =
-                text.replaceAll("(" + highlightStartMarker + ")(<[^<>]*?>)",
+                text.replaceAll("(" 
+                        + replaceForRegex(highlightStartMarker) 
+                        + ")(<[^<>]*?>)",
                     "$2$1");
             text =
-                text.replaceAll("(<[^<>]*?>)(" + highlightEndMarker + ")",
+                text.replaceAll("(<[^<>]*?>)(" 
+                        + replaceForRegex(highlightEndMarker) 
+                        + ")",
                     "$2$1");
             text = text.replaceAll("\\]\\]>", "");
         }
@@ -281,6 +292,19 @@ public class EscidocHighlightXmlizer implements SrwHighlightXmlizer{
     public void addHighlightFragmentData(
     		final HashMap<String, String> highlightFragmentData) {
         highlightFragmentDatas.add(highlightFragmentData);
+    }
+
+    /**
+     * empties Collection of all highlifgtFragmentDatas.
+     * 
+     * @sb
+     */
+    public void clearHighlightFragmentData() {
+        highlightFragmentDatas.clear();
+    }
+    
+    private String replaceForRegex(final String regexString) {
+        return regexString.replaceAll("([\\*\\?\\+\\.])", "\\\\$1");
     }
 
 }

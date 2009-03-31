@@ -61,6 +61,13 @@ public interface SrwHighlightXmlizer {
             final HashMap<String, String> highlightFragmentData);
 
     /**
+     * empties Collection of all highlightFragmentDatas.
+     * 
+     * @sb
+     */
+    void clearHighlightFragmentData();
+
+    /**
      * Make xml out of highlightFragmentDatas Array. 1. Write head of xml 2.
      * Iterate over highlightFragmentDatas 3. Get one highlightFragmentData
      * HashMap HahsMap contains the following elements: -highlightLocator (path
