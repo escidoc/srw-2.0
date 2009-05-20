@@ -72,3 +72,7 @@ db.escidoc_simple-highlighting.configuration=escidoc_simple-highlighting.SRWData
 db.escidoc_gsearch.class=de.escidoc.sb.srw.EscidocSRWDatabaseImpl
 db.escidoc_gsearch.configuration=escidoc_gsearch.SRWDatabase.properties
 
+#ESCIDOC internal filter-database for containers
+db.container.class=de.escidoc.sb.srw.EscidocSRWDatabaseImpl
+db.container.configuration=container.SRWDatabase.properties
+
