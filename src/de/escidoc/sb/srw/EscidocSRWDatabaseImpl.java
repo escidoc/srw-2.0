@@ -483,6 +483,7 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
         HashSet<String> sortSets = new HashSet<String>();
         Matcher contextSetMatcher = Constants.CONTEXT_SET_PATTERN.matcher("");
         Matcher sortSetMatcher = Constants.SORT_SET_PATTERN.matcher("");
+        Matcher reservedSetMatcher = Constants.RESERVED_SET_PATTERN.matcher("");
         Matcher qualifierMatcher = Constants.QUALIFIER_PATTERN.matcher("");
         Matcher dotMatcher = Constants.DOT_PATTERN.matcher("");
         while (enumer.hasMoreElements()) {
@@ -529,49 +530,47 @@ public class EscidocSRWDatabaseImpl extends org.osuosl.srw.SRWDatabaseImpl {
             ((EscidocTranslator) getCQLTranslator()).getIndexedFieldList();
         indexSet = null;
         index = null;
+        StringBuffer sortKeywords = new StringBuffer("");
         if (fieldList != null) {
             for (String fieldName : fieldList) {
-                if (dotMatcher.reset(fieldName).matches()) {
-                    String indexName = dotMatcher.group(2);
-                    if (contextSets.contains(dotMatcher.group(1))) {
-                        if (!sets.contains(dotMatcher.group(1))) {
-                            sets.add(dotMatcher.group(1));
+                if (!reservedSetMatcher.reset(fieldName).matches()) {
+                    String prefix = "";
+                    String indexName = fieldName;
+                    if (dotMatcher.reset(fieldName).matches()) {
+                        prefix = dotMatcher.group(1);
+                        if (sortSets.contains(prefix)) {
+                            sortKeywords.append("          <sortKeyword>").append(
+                                    fieldName).append("</sortKeyword>\n");
+                            continue;
                         }
-                        // get title from properties
-                        String title =
-                            dbProperties
-                                .getProperty("description." + fieldName);
-                        if (title == null || title.equals("")) {
-                            title = fieldName;
+                        if (!contextSets.contains(prefix)) {
+                            prefix = "";
+                        } else {
+                            indexName = dotMatcher.group(2);
                         }
-                        sb
-                            .append("          <index>\n")
-                            .append("            <title>")
-                            .append(title).append("</title>\n")
-                            .append("            <map>\n")
-                            .append("              <name set=\"")
-                            .append(dotMatcher.group(1))
-                            .append("\">")
-                            .append(indexName)
-                            .append("</name>\n")
-                            .append("              </map>\n")
-                            .append("            </index>\n");
                     }
+                    // get title from properties
+                    String title =
+                        dbProperties
+                            .getProperty("description." + fieldName);
+                    if (title == null || title.equals("")) {
+                        title = fieldName;
+                    }
+                    sb
+                        .append("          <index>\n")
+                        .append("            <title>")
+                        .append(title).append("</title>\n")
+                        .append("            <map>\n")
+                        .append("              <name set=\"")
+                        .append(prefix)
+                        .append("\">")
+                        .append(indexName)
+                        .append("</name>\n")
+                        .append("              </map>\n")
+                        .append("            </index>\n");
                 }
             }
             
-            //Get sort Fields
-            StringBuffer sortKeywords = new StringBuffer("");
-            if (fieldList != null) {
-                for (String fieldName : fieldList) {
-                    if (dotMatcher.reset(fieldName).matches()) {
-                        if (sortSets.contains(dotMatcher.group(1))) {
-                            sortKeywords.append("          <sortKeyword>").append(
-                                    fieldName).append("</sortKeyword>\n");
-                        }
-                    }
-                }
-            }
             if (sortKeywords.length() > 0) {
                 sb.append(sortKeywords);
             }
