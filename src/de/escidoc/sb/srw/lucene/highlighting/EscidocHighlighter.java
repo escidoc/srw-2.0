@@ -229,11 +229,12 @@ public class EscidocHighlighter implements SrwHighlighter {
             SEARCHFIELD_MATCHER.reset(query.toString());
             boolean fulltextFound = false;
             boolean nonFulltextFound = false;
+            
             while (SEARCHFIELD_MATCHER.find()) {
                 if (SEARCHFIELD_MATCHER.group(1) != null
                         && fulltextIndexField != null
                         && SEARCHFIELD_MATCHER.group(1)
-                            .equals(fulltextIndexField)) {
+                            .matches(".*" + fulltextIndexField + ".*")) {
                     fulltextFound = true;
                 } else {
                     nonFulltextFound = true;
