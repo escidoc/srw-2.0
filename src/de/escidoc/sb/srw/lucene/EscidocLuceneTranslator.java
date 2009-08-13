@@ -58,7 +58,6 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -405,11 +404,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     log.debug("identifierTerm: " + getIdentifierTerm());
                 }
                 Field idField = doc.getField(getIdentifierTerm());
-                Explanation explanation = 
-                    searcher.explain(query, results.id(i));
-                String explainToHtml = explanation.toHtml();
                 if (idField != null) {
-                    identifiers[i] = createIdentifier(doc, idField, explainToHtml);
+                    identifiers[i] = createIdentifier(doc, idField);
                 }
             }
         }
@@ -646,8 +642,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      */
     private String createIdentifier(
                             final Document doc, 
-                            final Field idField,
-                            final String explain)
+                            final Field idField)
                                 throws Exception {
         String idFieldStr = null;
         if (idField != null) {
@@ -669,17 +664,6 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 String highlight = null;
                 try {
                     highlight = highlighter.getFragments(doc, nsName);
-                    StringBuffer expl = new StringBuffer("");
-                    expl.append("<").append(nsName).append(":highlight>")
-                        .append("<").append(nsName).append(":search-hit type=\"metadata\">")
-                        .append("<").append(nsName).append(":text-fragment>")
-                        .append("<").append(nsName).append(":text-fragment-data>")
-                        .append("<![CDATA[").append(explain).append("]]>")
-                        .append("</").append(nsName).append(":text-fragment-data>")
-                        .append("</").append(nsName).append(":text-fragment>")
-                        .append("</").append(nsName).append(":search-hit>")
-                        .append("</").append(nsName).append(":highlight>");
-                    highlight += expl.toString();
                 } catch (Exception e) {
                     log.error(e);
                 }
