@@ -72,6 +72,10 @@ public class Constants {
     public static final String PROPERTY_COMPARATOR =
         "cqlTranslator.sortComparator";
     
+    //used for custom lucene-scoring
+    public static final String PROPERTY_SIMILARITY =
+        "cqlTranslator.similarity";
+    
     public static final String PROPERTY_HIGHLIGHT_TERM_FULLTEXT =
         "cqlTranslator.highlightTermFulltext";
 
