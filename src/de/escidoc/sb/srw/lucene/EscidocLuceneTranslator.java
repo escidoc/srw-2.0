@@ -61,6 +61,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortComparatorSource;
 import org.apache.lucene.search.SortField;
@@ -166,6 +167,25 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
      */
     public void setComparator(final SortComparatorSource inp) {
     	comparator = inp;
+    }
+
+    /**
+     * Similarity for custom ranking of search-result.
+     */
+    private Similarity similarity = null;
+
+    /**
+     * @return String similarity.
+     */
+    public Similarity getSimilarity() {
+        return similarity;
+    }
+
+    /**
+     * @param inp similarity.
+     */
+    public void setSimilarity(final Similarity inp) {
+        similarity = inp;
     }
 
     /**
@@ -278,6 +298,16 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
         }
 
+        temp = (String) properties.get(Constants.PROPERTY_SIMILARITY);
+        if (temp != null && temp.trim().length() != 0) {
+            try {
+                similarity = (Similarity) Class.forName(temp).newInstance();
+            }
+            catch (Exception e) {
+                log.error(e);
+            }
+        }
+
     }
 
     /**
@@ -335,6 +365,10 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
 
             try {
                 searcher = new IndexSearcher(getIndexPath());
+                //check if custom scoring should be done
+                if (similarity != null) {
+                    searcher.setSimilarity(similarity);
+                }
             }
             catch (Exception e) {
                 log.info(e);
