@@ -62,7 +62,7 @@ public class EscidocRelationalDatabaseTranslator extends EscidocTranslator {
 
         identifiers[0] = "<search-result:search-result-record "
                         + "xml:base=\"http://www.escidoc.de/\" "
-                        + "xmlns:search-result=\"http://www.escidoc.de/schemas/searchresult/0.7\">"
+                        + "xmlns:search-result=\"http://www.escidoc.de/schemas/searchresult/0.8\">"
                         + "<element>hello world</element>"
                         + "</search-result:search-result-record>";
         
