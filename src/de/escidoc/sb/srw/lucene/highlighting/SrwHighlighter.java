@@ -76,8 +76,6 @@ public interface SrwHighlighter {
      * 
      * @param doc
      *            lucene-document
-     * @param namespacePrefix
-     *            namespacePrefix for xml
      * @exception Exception
      *                e
      * 
@@ -85,7 +83,7 @@ public interface SrwHighlighter {
      * 
      * @sb
      */
-    String getFragments(final Document doc, final String namespacePrefix)
+    String getFragments(final Document doc)
         throws Exception;
 
 }

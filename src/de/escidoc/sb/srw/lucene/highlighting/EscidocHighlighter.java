@@ -302,8 +302,6 @@ public class EscidocHighlighter implements SrwHighlighter {
      * 
      * @param doc
      *            lucene-document
-     * @param namespacePrefix
-     *            namespacePrefix for xml
      * @exception Exception
      *                e
      * 
@@ -311,7 +309,7 @@ public class EscidocHighlighter implements SrwHighlighter {
      * 
      * @sb
      */
-    public String getFragments(final Document doc, final String namespacePrefix)
+    public String getFragments(final Document doc)
         throws Exception {
         if (highlighter == null) {
             return "";
@@ -319,10 +317,13 @@ public class EscidocHighlighter implements SrwHighlighter {
 
         //clear highlightXmlizer fragment data
         highlightXmlizer.clearHighlightFragmentData();
+        //get properties like highlight-start-marker etc.
         highlightXmlizer.setProperties(getCustomProperties());
         
         HashMap<String, String> highlightFragmentData = null;
-        // If search-field was fulltext, highlight fulltext/////////
+        // Get highlight-snippets from luene-highlighter
+        //and add them to highlight-xmlizer
+        // If search-field was fulltext, highlight fulltext.
         if (searchFields.contains("fulltext")
             && highlightFulltextField != null
             && highlightFulltextField.trim().length() != 0) {
@@ -402,7 +403,8 @@ public class EscidocHighlighter implements SrwHighlighter {
             }
 
         }
-        return highlightXmlizer.xmlize(namespacePrefix);
+        //generate highlight-xml from highlight-data
+        return highlightXmlizer.xmlize();
     }
 
     /**

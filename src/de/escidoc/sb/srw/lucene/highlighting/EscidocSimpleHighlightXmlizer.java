@@ -88,11 +88,10 @@ public class EscidocSimpleHighlightXmlizer implements SrwHighlightXmlizer{
      *             e
      * @sb
      */
-    public String xmlize(final String namespacePrefix) throws Exception {
+    public String xmlize() throws Exception {
         StringBuffer xml = new StringBuffer("");
         if (highlightFragmentDatas != null && !highlightFragmentDatas.isEmpty()) {
-            xml.append("<").append(getNamespacePrefix(namespacePrefix)).append(
-                "highlight>");
+            xml.append(Constants.HIGHLIGHT_START_ELEMENT);
             for (HashMap<String, String> highlightFragmentData : highlightFragmentDatas) {
                 String type = highlightFragmentData.get("type");
                 String objid =
@@ -111,8 +110,8 @@ public class EscidocSimpleHighlightXmlizer implements SrwHighlightXmlizer{
                         replaceSpecialCharacters(textFragmentData);
                     xml
                         .append("<")
-                        .append(getNamespacePrefix(namespacePrefix)).append(
-                            "search-hit type=\"").append(type).append("\"");
+                        .append(Constants.SEARCH_RESULT_NAMESPACE_PREFIX).append(
+                            ":search-hit type=\"").append(type).append("\"");
                     if (type.equals("fulltext")) {
                         if (objid == null || objid.equals("")) {
                             throw new Exception(
@@ -122,19 +121,17 @@ public class EscidocSimpleHighlightXmlizer implements SrwHighlightXmlizer{
                     }
                     xml.append(">");
                     if (textFragmentData != null) {
-                        xml.append(xmlizeTextFragment(textFragmentData,
-                                namespacePrefix));
+                        xml.append(xmlizeTextFragment(textFragmentData));
                     }
                     xml
                         .append("</").append(
-                            getNamespacePrefix(namespacePrefix)).append(
-                            "search-hit>");
+                            Constants.SEARCH_RESULT_NAMESPACE_PREFIX).append(
+                            ":search-hit>");
                 }
 
             }
             xml
-                .append("</").append(getNamespacePrefix(namespacePrefix))
-                .append("highlight>");
+                .append(Constants.HIGHLIGHT_END_ELEMENT);
         }
         return xml.toString();
     }
@@ -144,31 +141,29 @@ public class EscidocSimpleHighlightXmlizer implements SrwHighlightXmlizer{
      * 
      * @param textFragment
      *            textFragment.
-     * @param namespacePrefix
-     *            namespacePrefix to use for xml.
      * @return String xml
      * @sb
      */
     private String xmlizeTextFragment(
-        final String textFragment, final String namespacePrefix) {
+        final String textFragment) {
         StringBuffer xml = new StringBuffer("");
         if (textFragment != null && textFragment.length() > 0) {
             xml
-                .append("<").append(getNamespacePrefix(namespacePrefix))
-                .append("text-fragment>");
+                .append("<").append(Constants.SEARCH_RESULT_NAMESPACE_PREFIX)
+                .append(":text-fragment>");
             xml
-                .append("<").append(getNamespacePrefix(namespacePrefix))
-                .append("text-fragment-data>");
+                .append("<").append(Constants.SEARCH_RESULT_NAMESPACE_PREFIX)
+                .append(":text-fragment-data>");
 
             //Append Text-Fragment
             xml.append("<![CDATA[").append(textFragment).append("]]>");
 
             xml
-                .append("</").append(getNamespacePrefix(namespacePrefix))
-                .append("text-fragment-data>");
+                .append("</").append(Constants.SEARCH_RESULT_NAMESPACE_PREFIX)
+                .append(":text-fragment-data>");
             xml
-                .append("</").append(getNamespacePrefix(namespacePrefix))
-                .append("text-fragment>");
+                .append("</").append(Constants.SEARCH_RESULT_NAMESPACE_PREFIX)
+                .append(":text-fragment>");
         }
         return xml.toString();
     }

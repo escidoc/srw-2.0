@@ -96,18 +96,6 @@ import de.escidoc.sb.srw.lucene.sorting.EscidocSearchResultComparator;
  */
 public class EscidocLuceneTranslator extends EscidocTranslator {
 
-    private static final Pattern namespacePattern = 
-    				Pattern.compile("(?s)<([^>]*?):");
-    
-    private static Matcher namespaceMatcher = 
-    				namespacePattern.matcher("");
-
-    private static final Pattern firstelementPattern = 
-		Pattern.compile("(?s)(<\\s*[^\\?]*?>)");
-
-    private static Matcher firstelementMatcher = 
-    				firstelementPattern.matcher("");
-
     /**
      * SrwHighlighter.
      */
@@ -374,6 +362,7 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 log.info(e);
             }
             int size = 0;
+                        
             Hits results = null;
             if (searcher != null) {
                 // perform sorted search?
@@ -392,7 +381,6 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
             }
 
             log.info(size + " handles found");
-            identifiers = new String[size];
 
             /**
              * get startRecord
@@ -432,16 +420,8 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                 log.debug("iterating resultset from record " + startRecord
                     + " to " + endRecord);
             }
-            for (int i = startRecord - 1; i < endRecord; i++) {
-                org.apache.lucene.document.Document doc = results.doc(i);
-                if (log.isDebugEnabled()) {
-                    log.debug("identifierTerm: " + getIdentifierTerm());
-                }
-                Field idField = doc.getField(getIdentifierTerm());
-                if (idField != null) {
-                    identifiers[i] = createIdentifier(doc, idField);
-                }
-            }
+            identifiers = createIdentifiers(results, startRecord, endRecord);
+            
         }
         catch (Exception e) {
             throw new SRWDiagnostic(SRWDiagnostic.GeneralSystemError, e
@@ -659,56 +639,77 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
     }
 
     /**
-     * Creates the identifier (search-xml that is returned as response) with
-     * highlight-information.
+     * Creates the identifiers (search-xmls that are returned as response) with
+     * extra information (highlight, score....)
      * 
-     * @param doc
-     *            Lucene Hit-Document
-     * @param idField
-     *            Field that holds the primary key of the Object
-     * @param query
-     *            Lucene Query Object
-     * @return String Replaced String
+     * @param hits
+     *            Lucene Hit-Documents
+     * @param startRecord
+     *            startRecord
+     * @param endRecord endRecord
+     * @return String[] with search-result xmls
      * @throws Exception
      *             e
      * 
      * @sb
      */
-    private String createIdentifier(
-                            final Document doc, 
-                            final Field idField)
+    private String[] createIdentifiers(
+                    final Hits hits, 
+                    final int startRecord, 
+                    final int endRecord)
                                 throws Exception {
-        String idFieldStr = null;
-        if (idField != null) {
-            idFieldStr = idField.stringValue();
-        }
-        if (idFieldStr != null && idFieldStr.trim().length() != 0) {
-        	if (idFieldStr.trim().startsWith("&")) {
-                idFieldStr = StringEscapeUtils.unescapeXml(idFieldStr);
-        	}
-            if (highlighter != null) {
-                String nsName = null;
-                namespaceMatcher.reset(idFieldStr);
-                if (namespaceMatcher.find()) {
-                    nsName = namespaceMatcher.group(1);
+        String[] identifiers = new String[hits.length()];
+
+        for (int i = startRecord - 1; i < endRecord; i++) {
+            //get next hit
+            org.apache.lucene.document.Document doc = hits.doc(i);
+            if (log.isDebugEnabled()) {
+                log.debug("identifierTerm: " + getIdentifierTerm());
+            }
+            
+            //get field containing the search-result-xml from lucene for this hit
+            Field idField = doc.getField(getIdentifierTerm());
+            if (idField != null) {
+                String idFieldStr = null;
+                if (idField != null) {
+                    idFieldStr = idField.stringValue();
                 }
-                else {
-                    nsName = "";
+                if (idFieldStr != null && idFieldStr.trim().length() != 0) {
+                    if (idFieldStr.trim().startsWith("&")) {
+                        idFieldStr = StringEscapeUtils.unescapeXml(idFieldStr);
+                    }
+
+                    //initialize surrounding xml
+                    StringBuffer complete = new StringBuffer(
+                            Constants.SEARCH_RESULT_START_ELEMENT);
+                    
+                    //append score-element
+                    complete.append(Constants.SCORE_START_ELEMENT);
+                    complete.append(hits.score(i));
+                    complete.append(Constants.SCORE_END_ELEMENT);
+                    
+                    //append highlighting
+                    if (highlighter != null) {
+                        String highlight = null;
+                        try {
+                            highlight = highlighter.getFragments(doc);
+                        } catch (Exception e) {
+                            log.error(e);
+                        }
+                        if (highlight != null && !highlight.equals("")) {
+                            complete.append(highlight);
+                        }
+                    }
+                    
+                    //append search-result-xml from lucene
+                    complete.append(idFieldStr).append("\n");
+                    //close surrounding xml
+                    complete.append(Constants.SEARCH_RESULT_END_ELEMENT);
                 }
-                String highlight = null;
-                try {
-                    highlight = highlighter.getFragments(doc, nsName);
-                } catch (Exception e) {
-                    log.error(e);
-                }
-                if (highlight != null && !highlight.equals("")) {
-                	firstelementMatcher.reset(idFieldStr);
-                	idFieldStr = firstelementMatcher.replaceFirst(
-                			"$1" + Matcher.quoteReplacement(highlight));
-                }
+                identifiers[i] = idFieldStr;
             }
         }
-        return idFieldStr;
+        return identifiers;
     }
 
     /**

@@ -56,7 +56,32 @@ public class Constants {
     public static final String GSEARCH_URL = "http://localhost:8080/fedoragsearch/rest";
 
     public static final String XML_HIT_PATH = "/hits/hit";
+    
+    //Constants for generating search-result output
+    public static final String SEARCH_RESULT_NAMESPACE_PREFIX = "search-result";
+    
+    public static final String SEARCH_RESULT_START_ELEMENT = 
+        "<" + SEARCH_RESULT_NAMESPACE_PREFIX + ":search-result-record "
+        + "xmlns:" + SEARCH_RESULT_NAMESPACE_PREFIX 
+        + "=\"http://www.escidoc.de/schemas/searchresult/0.8\" "
+        + "xml:base=\"http://www.escidoc.de/\">\n";
 
+    public static final String SEARCH_RESULT_END_ELEMENT = 
+        "<" + SEARCH_RESULT_NAMESPACE_PREFIX + ":search-result-record/>";
+
+    public static final String SCORE_START_ELEMENT = 
+        "<" + SEARCH_RESULT_NAMESPACE_PREFIX + ":score>";
+
+    public static final String SCORE_END_ELEMENT = 
+        "<" + SEARCH_RESULT_NAMESPACE_PREFIX + ":score/>\n";
+
+    public static final String HIGHLIGHT_START_ELEMENT = 
+        "<" + SEARCH_RESULT_NAMESPACE_PREFIX + ":highlight>";
+
+    public static final String HIGHLIGHT_END_ELEMENT = 
+        "<" + SEARCH_RESULT_NAMESPACE_PREFIX + ":highlight/>\n";
+
+    //SRW Property-Names
     //custom lucene analyzer
     public static final String PROPERTY_ANALYZER = "cqlTranslator.analyzer";
 

@@ -77,13 +77,11 @@ public interface SrwHighlightXmlizer {
      * head-information for the highlight-snippet 5. Write text-information for
      * the highlight-snippet by calling method xmlizeTextFragment
      * 
-     * @param namespacePrefix
-     *            namespacePrefix to use for xml.
      * @return String xml
      * @throws Exception
      *             e
      * @sb
      */
-    String xmlize(final String namespacePrefix) throws Exception;
+    String xmlize() throws Exception;
 
 }
