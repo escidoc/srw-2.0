@@ -85,11 +85,11 @@ cqlTranslator.defaultIndexField=fulltext
 # The class used must implement org.osuosl.srw.RecordResolver
 recordResolver=de.escidoc.sb.srw.EscidocRecordResolver
 #supported schemas
-recordResolver.schema.default=
-recordResolver.default.identifier=http://www.escidoc.de/schemas/searchresult/0.8
-recordResolver.default.location=http://www.escidoc.de/schemas/soap/search-result/0.8/search-result.xsd
-recordResolver.default.title=eSciDoc schema for SRW/U search results
-recordResolver.schema.dc=
+#recordResolver.schema.default=
+#recordResolver.default.identifier=<namespace of schema>
+#recordResolver.default.location=<location of schema as url>
+#recordResolver.default.title=eSciDoc schema for SRW/U search results
+#recordResolver.schema.dc=
 
 # ------------------------------------------------------------------------
 #descriptive information about the database
