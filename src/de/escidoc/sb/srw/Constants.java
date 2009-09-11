@@ -67,19 +67,19 @@ public class Constants {
         + "xml:base=\"http://www.escidoc.de/\">\n";
 
     public static final String SEARCH_RESULT_END_ELEMENT = 
-        "<" + SEARCH_RESULT_NAMESPACE_PREFIX + ":search-result-record/>";
+        "</" + SEARCH_RESULT_NAMESPACE_PREFIX + ":search-result-record>";
 
     public static final String SCORE_START_ELEMENT = 
         "<" + SEARCH_RESULT_NAMESPACE_PREFIX + ":score>";
 
     public static final String SCORE_END_ELEMENT = 
-        "<" + SEARCH_RESULT_NAMESPACE_PREFIX + ":score/>\n";
+        "</" + SEARCH_RESULT_NAMESPACE_PREFIX + ":score>\n";
 
     public static final String HIGHLIGHT_START_ELEMENT = 
         "<" + SEARCH_RESULT_NAMESPACE_PREFIX + ":highlight>";
 
     public static final String HIGHLIGHT_END_ELEMENT = 
-        "<" + SEARCH_RESULT_NAMESPACE_PREFIX + ":highlight/>\n";
+        "</" + SEARCH_RESULT_NAMESPACE_PREFIX + ":highlight>\n";
 
     //SRW Property-Names
     //custom lucene analyzer

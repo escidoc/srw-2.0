@@ -48,6 +48,7 @@ import java.util.StringTokenizer;
 import org.apache.axis.types.NonNegativeInteger;
 import org.apache.axis.types.PositiveInteger;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -656,58 +657,65 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
                     final int startRecord, 
                     final int endRecord)
                                 throws Exception {
-        String[] identifiers = new String[hits.length()];
+        String[] searchResultXmls = new String[hits.length()];
 
         for (int i = startRecord - 1; i < endRecord; i++) {
             //get next hit
             org.apache.lucene.document.Document doc = hits.doc(i);
-            if (log.isDebugEnabled()) {
-                log.debug("identifierTerm: " + getIdentifierTerm());
+
+            //initialize surrounding xml
+            StringBuffer complete = new StringBuffer(
+                    Constants.SEARCH_RESULT_START_ELEMENT);
+            
+            //append score-element
+            complete.append(Constants.SCORE_START_ELEMENT);
+            complete.append(hits.score(i));
+            complete.append(Constants.SCORE_END_ELEMENT);
+            
+            //append highlighting
+            if (highlighter != null) {
+                String highlight = null;
+                try {
+                    highlight = highlighter.getFragments(doc);
+                } catch (Exception e) {
+                    log.error(e);
+                }
+                if (highlight != null && !highlight.equals("")) {
+                    complete.append(highlight);
+                }
             }
             
             //get field containing the search-result-xml from lucene for this hit
+            if (log.isDebugEnabled()) {
+                log.debug("identifierTerm: " + getIdentifierTerm());
+            }
             Field idField = doc.getField(getIdentifierTerm());
+            String idFieldStr = null;
             if (idField != null) {
-                String idFieldStr = null;
-                if (idField != null) {
-                    idFieldStr = idField.stringValue();
-                }
-                if (idFieldStr != null && idFieldStr.trim().length() != 0) {
+                idFieldStr = idField.stringValue();
+                if (StringUtils.isNotBlank(idFieldStr)) {
                     if (idFieldStr.trim().startsWith("&")) {
                         idFieldStr = StringEscapeUtils.unescapeXml(idFieldStr);
                     }
 
-                    //initialize surrounding xml
-                    StringBuffer complete = new StringBuffer(
-                            Constants.SEARCH_RESULT_START_ELEMENT);
-                    
-                    //append score-element
-                    complete.append(Constants.SCORE_START_ELEMENT);
-                    complete.append(hits.score(i));
-                    complete.append(Constants.SCORE_END_ELEMENT);
-                    
-                    //append highlighting
-                    if (highlighter != null) {
-                        String highlight = null;
-                        try {
-                            highlight = highlighter.getFragments(doc);
-                        } catch (Exception e) {
-                            log.error(e);
-                        }
-                        if (highlight != null && !highlight.equals("")) {
-                            complete.append(highlight);
-                        }
-                    }
-                    
                     //append search-result-xml from lucene
                     complete.append(idFieldStr).append("\n");
-                    //close surrounding xml
-                    complete.append(Constants.SEARCH_RESULT_END_ELEMENT);
                 }
-                identifiers[i] = idFieldStr;
             }
+            
+            if (StringUtils.isBlank(idFieldStr)) {
+                complete.append("<default-search-result>")
+                    .append(doc.getField("PID"))
+                    .append("</default-search-result>");
+            }
+
+            //close surrounding xml
+            complete.append(Constants.SEARCH_RESULT_END_ELEMENT);
+            
+            //append xml to search-results
+            searchResultXmls[i] = complete.toString();
         }
-        return identifiers;
+        return searchResultXmls;
     }
 
     /**
