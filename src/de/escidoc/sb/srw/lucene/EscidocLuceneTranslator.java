@@ -736,9 +736,9 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         }
 
         // extract sortKeys and fill them into a Lucene Sort-Object
-        Collection sortFields = new ArrayList();
+        Collection<String> sortFields = new ArrayList<String>();
         if (replacedSortKeysString != null) {
-            String[] sortKeys = replacedSortKeysString.split("\\s");
+            String[] sortKeys = replacedSortKeysString.split("\\s+");
             for (int i = 0; i < sortKeys.length; i++) {
                 sortFields.add(sortKeys[i]);
             }
@@ -746,23 +746,34 @@ public class EscidocLuceneTranslator extends EscidocTranslator {
         if (sortFields != null && !sortFields.isEmpty()) {
             int i = 0;
             SortField[] sortFieldArr = new SortField[sortFields.size()];
-            for (Iterator iter = sortFields.iterator(); iter.hasNext();) {
-                String sortField = (String) iter.next();
+            for (String sortField : sortFields) {
                 String[] sortPart = sortField.split(",");
                 if (sortPart != null && sortPart.length > 0) {
                     if (sortPart.length > 2 && sortPart[2].equals("0")) {
-                    	if (comparator == null) {
-                            sortFieldArr[i] = new SortField(sortPart[0], true);
-                    	} else {
-                            sortFieldArr[i] = new SortField(sortPart[0], comparator, true);
-                    	}
+                        //check for sorting for score
+                        if (sortPart[0].equals(
+                                Constants.RELEVANCE_SORT_FIELD_NAME)) {
+                            sortFieldArr[i] = SortField.FIELD_SCORE;
+                        } else {
+                            if (comparator == null) {
+                                sortFieldArr[i] = new SortField(sortPart[0], true);
+                            } else {
+                                sortFieldArr[i] = new SortField(sortPart[0], comparator, true);
+                            }
+                        }
                     }
                     else {
-                    	if (comparator == null) {
-                            sortFieldArr[i] = new SortField(sortPart[0]);
-                    	} else {
-                            sortFieldArr[i] = new SortField(sortPart[0], comparator);
-                    	}
+                        //check for sorting for score
+                        if (sortPart[0].equals(
+                                Constants.RELEVANCE_SORT_FIELD_NAME)) {
+                            sortFieldArr[i] = SortField.FIELD_SCORE;
+                        } else {
+                            if (comparator == null) {
+                                sortFieldArr[i] = new SortField(sortPart[0]);
+                            } else {
+                                sortFieldArr[i] = new SortField(sortPart[0], comparator);
+                            }
+                        }
                     }
                     i++;
                 }

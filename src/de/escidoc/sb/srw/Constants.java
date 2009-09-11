@@ -57,6 +57,8 @@ public class Constants {
 
     public static final String XML_HIT_PATH = "/hits/hit";
     
+    public static final String RELEVANCE_SORT_FIELD_NAME = "_relevance_";
+    
     //Constants for generating search-result output
     public static final String SEARCH_RESULT_NAMESPACE_PREFIX = "search-result";
     
