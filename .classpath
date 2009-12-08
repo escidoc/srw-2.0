@@ -6,7 +6,7 @@
 	<classpathentry kind="lib" path="lib/commons-collections.jar"/>
 	<classpathentry kind="lib" path="lib/commons-dbcp.jar"/>
 	<classpathentry kind="lib" path="lib/commons-discovery-0.2.jar"/>
-	<classpathentry kind="lib" path="lib/commons-logging-1.0.4.jar"/>
+	<classpathentry kind="lib" path="lib/commons-logging.jar"/>
 	<classpathentry kind="lib" path="lib/commons-pool.jar"/>
 	<classpathentry kind="lib" path="lib/cql-java.jar"/>
 	<classpathentry kind="lib" path="lib/jaxrpc.jar"/>
