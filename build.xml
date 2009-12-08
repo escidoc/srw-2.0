@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<project name="SRW" basedir="." default="compile_srw">
+<project name="SRW" basedir="." default="compileSRW">
 
 	<property name="build.dir" value="build" />
 	<property name="dist.dir" value="dist" />
