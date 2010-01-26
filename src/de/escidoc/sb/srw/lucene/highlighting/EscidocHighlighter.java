@@ -31,6 +31,8 @@ package de.escidoc.sb.srw.lucene.highlighting;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
@@ -46,6 +48,8 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.highlight.Highlighter;
 import org.apache.lucene.search.highlight.QueryScorer;
@@ -97,6 +101,10 @@ public class EscidocHighlighter implements SrwHighlighter {
     //*************************************************************************
 
     private HashSet<String> searchFields = new HashSet<String>();
+
+    private BooleanQuery fulltextQuery = new BooleanQuery();
+
+    private BooleanQuery metadataQuery = new BooleanQuery();
 
     private final Pattern SEARCHFIELD_PATTERN = 
                     Pattern.compile("([^\\s\\\\:]+?):");
@@ -222,25 +230,52 @@ public class EscidocHighlighter implements SrwHighlighter {
 
         Query replacedQuery = query;
         searchFields = new HashSet<String>();
+        fulltextQuery = new BooleanQuery();
+        metadataQuery = new BooleanQuery();
         if (indexPath != null && indexPath.trim().length() != 0
             && query != null && query.toString() != null) {
 
             // get search-fields from query////////////////////////////////////
-            SEARCHFIELD_MATCHER.reset(query.toString());
             boolean fulltextFound = false;
             boolean nonFulltextFound = false;
             
-            while (SEARCHFIELD_MATCHER.find()) {
-                if (SEARCHFIELD_MATCHER.group(1) != null
-                        && fulltextIndexField != null
-                        && SEARCHFIELD_MATCHER.group(1)
-                            .matches(".*" + fulltextIndexField + ".*")) {
-                    fulltextFound = true;
-                } else {
-                    nonFulltextFound = true;
+            Collection<BooleanClause> clauses = 
+                new ArrayList<BooleanClause>();
+            if (query instanceof BooleanQuery) {
+                try {
+                    clauses = getBooleanClauses((BooleanQuery)query);
+                } catch (Exception e) {}
+            }
+            
+            if (clauses != null && clauses.size() > 0) {
+                for (BooleanClause clause : clauses) {
+                    SEARCHFIELD_MATCHER.reset(clause.toString());
+                    while (SEARCHFIELD_MATCHER.find()) {
+                        if (SEARCHFIELD_MATCHER.group(1) != null
+                                && fulltextIndexField != null
+                                && SEARCHFIELD_MATCHER.group(1)
+                                    .matches(".*" + fulltextIndexField + ".*")) {
+                            fulltextFound = true;
+                            fulltextQuery.add(clause);
+                        } else {
+                            nonFulltextFound = true;
+                            metadataQuery.add(clause);
+                        }
+                    }
                 }
-                if (fulltextFound && nonFulltextFound) {
-                    break;
+            } else {
+                SEARCHFIELD_MATCHER.reset(query.toString());
+                while (SEARCHFIELD_MATCHER.find()) {
+                    if (SEARCHFIELD_MATCHER.group(1) != null
+                            && fulltextIndexField != null
+                            && SEARCHFIELD_MATCHER.group(1)
+                                .matches(".*" + fulltextIndexField + ".*")) {
+                        fulltextFound = true;
+                        fulltextQuery.add(query, BooleanClause.Occur.MUST);
+                    } else {
+                        nonFulltextFound = true;
+                        metadataQuery.add(query, BooleanClause.Occur.MUST);
+                    }
                 }
             }
             if (fulltextFound) {
@@ -327,6 +362,8 @@ public class EscidocHighlighter implements SrwHighlighter {
         if (searchFields.contains("fulltext")
             && highlightFulltextField != null
             && highlightFulltextField.trim().length() != 0) {
+            //get fulltextQuery
+            highlighter.setFragmentScorer(new QueryScorer(fulltextQuery));
             if (!highlightFulltextFieldIterable.equalsIgnoreCase("true")) {
                 try {
                     highlightFragmentData =
@@ -368,6 +405,8 @@ public class EscidocHighlighter implements SrwHighlighter {
         if (searchFields.contains("metadata")
             && highlightMetadataField != null
             && highlightMetadataField.trim().length() != 0) {
+            //get metadataQuery
+            highlighter.setFragmentScorer(new QueryScorer(metadataQuery));
             if (!highlightMetadataFieldIterable.equalsIgnoreCase("true")) {
                 try {
                     highlightFragmentData =
@@ -541,6 +580,31 @@ public class EscidocHighlighter implements SrwHighlighter {
         props.put(Constants.PROPERTY_HIGHLIGHT_FRAGMENT_SEPARATOR, 
                                         highlightFragmentSeparator);
         return props;
+    }
+    
+    /**
+     * Get recursively all BooleanClauses in a Query.
+     *
+     * @return The BooleanClauses as Collection.
+     */
+    private Collection<BooleanClause> getBooleanClauses(
+            final BooleanQuery query) throws Exception {
+        Collection<BooleanClause> clauses =
+                new ArrayList<BooleanClause>();
+        BooleanClause[] clauseArr = query.getClauses();
+        if (clauseArr != null) {
+            for (int i = 0; i < clauseArr.length; i++) {
+                if (clauseArr[i].getQuery() != null 
+                        && clauseArr[i].getQuery() instanceof BooleanQuery) {
+                    clauses.addAll(
+                            getBooleanClauses(
+                                  ((BooleanQuery)clauseArr[i].getQuery())));
+                } else {
+                    clauses.add(clauseArr[i]);
+                }
+            }
+        }
+        return clauses;
     }
     
 }
