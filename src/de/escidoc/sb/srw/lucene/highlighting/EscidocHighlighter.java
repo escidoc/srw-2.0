@@ -102,9 +102,9 @@ public class EscidocHighlighter implements SrwHighlighter {
 
     private HashSet<String> searchFields = new HashSet<String>();
 
-    private BooleanQuery fulltextQuery = new BooleanQuery();
+    private Query fulltextQuery = null;
 
-    private BooleanQuery metadataQuery = new BooleanQuery();
+    private Query metadataQuery = null;
 
     private final Pattern SEARCHFIELD_PATTERN = 
                     Pattern.compile("([^\\s\\\\:]+?):");
@@ -228,10 +228,9 @@ public class EscidocHighlighter implements SrwHighlighter {
     public void initialize(final String indexPath, final Query query)
         throws Exception {
 
-        Query replacedQuery = query;
         searchFields = new HashSet<String>();
-        fulltextQuery = new BooleanQuery();
-        metadataQuery = new BooleanQuery();
+        fulltextQuery = null;
+        metadataQuery = null;
         if (indexPath != null && indexPath.trim().length() != 0
             && query != null && query.toString() != null) {
 
@@ -256,10 +255,16 @@ public class EscidocHighlighter implements SrwHighlighter {
                                 && SEARCHFIELD_MATCHER.group(1)
                                     .matches(".*" + fulltextIndexField + ".*")) {
                             fulltextFound = true;
-                            fulltextQuery.add(clause);
+                            if (fulltextQuery == null) {
+                                fulltextQuery = new BooleanQuery();
+                            }
+                            ((BooleanQuery)fulltextQuery).add(clause);
                         } else {
                             nonFulltextFound = true;
-                            metadataQuery.add(clause);
+                            if (metadataQuery == null) {
+                                metadataQuery = new BooleanQuery();
+                            }
+                            ((BooleanQuery)metadataQuery).add(clause);
                         }
                     }
                 }
@@ -271,10 +276,14 @@ public class EscidocHighlighter implements SrwHighlighter {
                             && SEARCHFIELD_MATCHER.group(1)
                                 .matches(".*" + fulltextIndexField + ".*")) {
                         fulltextFound = true;
-                        fulltextQuery.add(query, BooleanClause.Occur.MUST);
+                        if (fulltextQuery == null) {
+                            fulltextQuery = query;
+                        }
                     } else {
                         nonFulltextFound = true;
-                        metadataQuery.add(query, BooleanClause.Occur.MUST);
+                        if (metadataQuery == null) {
+                            metadataQuery = query;
+                        }
                     }
                 }
             }
@@ -286,19 +295,22 @@ public class EscidocHighlighter implements SrwHighlighter {
             }
             // ////////////////////////////////////////////////////////////////
 
-            // Initialize Highlighter with query, highlight-start + end marker
-            // and highlightFragmentSize
             Directory directory = null;
             IndexReader reader = null;
             try {
                 directory = FSDirectory.getDirectory(indexPath);
                 reader = IndexReader.open(directory);
-                replacedQuery = query.rewrite(reader);
-                // Initialize Highlighter with formatter and scorer
+                if (fulltextQuery != null) {
+                    fulltextQuery = fulltextQuery.rewrite(reader);
+                }
+                if (metadataQuery != null) {
+                    metadataQuery = metadataQuery.rewrite(reader);
+                }
+                // Initialize Highlighter with formatter, highlight-start + end marker
                 highlighter =
                     new Highlighter(new SimpleHTMLFormatter(
                         highlightStartMarker, highlightEndMarker),
-                        new QueryScorer(replacedQuery));
+                        null);
                 // Set Text-Fragmenter
                 highlighter.setTextFragmenter(new SimpleFragmenter(
                     highlightFragmentSize));
