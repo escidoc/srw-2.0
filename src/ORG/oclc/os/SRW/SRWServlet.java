@@ -197,6 +197,9 @@ public class SRWServlet extends AxisServlet {
         throws ServletException, IOException
     {
         log.debug("Enter: doGet()");
+        if (log.isInfoEnabled()) {
+            log.info(request.getRequestURL().append('?').append(request.getQueryString()).toString());
+        }
 //        try {
 //            request.setCharacterEncoding("UTF-8");
 //        } catch (java.io.UnsupportedEncodingException e){}
@@ -792,7 +795,7 @@ public class SRWServlet extends AxisServlet {
                             req.getHeader(HTTPConstants.HEADER_CONTENT_TYPE),
                             req.getHeader(HTTPConstants.HEADER_CONTENT_LOCATION));
 
-            if(isDebug) log.debug("Request Message:" + requestMsg);
+            if(log.isInfoEnabled()) log.info("Request Message:" + requestMsg);
 
             /* Set the request(incoming) message field in the context */
             /**********************************************************/
