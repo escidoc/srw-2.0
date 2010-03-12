@@ -29,9 +29,9 @@
 	<classpathentry kind="lib" path="lib/escidoc/lucene-ja.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/sen.jar"/>
 	<classpathentry kind="lib" path="lib/escidoc/common.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/jcl-over-slf4j-1.5.8.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/slf4j-api-1.5.8.jar"/>
-	<classpathentry kind="lib" path="lib/escidoc/slf4j-log4j12-1.5.8.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.15.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/jcl-over-slf4j-1.5.11.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/slf4j-api-1.5.11.jar"/>
+	<classpathentry kind="lib" path="lib/escidoc/slf4j-log4j12-1.5.11.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
