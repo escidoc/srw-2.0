@@ -30,6 +30,7 @@
 package de.escidoc.sb.srw;
 
 import gov.loc.www.zing.srw.ExtraDataType;
+import gov.loc.www.zing.srw.ScanRequestType;
 import gov.loc.www.zing.srw.SearchRetrieveRequestType;
 import gov.loc.www.zing.srw.TermType;
 
@@ -160,7 +161,7 @@ public abstract class EscidocTranslator extends LuceneTranslator {
 	 */
 	@Override
     public abstract TermType[] scan(final CQLNode queryRoot,
-			final ExtraDataType extraDataType) throws Exception;
+			final ScanRequestType scanRequestType) throws Exception;
 	
     /**
      * Returns a list of all FieldNames currently in lucene-index
