@@ -1272,8 +1272,10 @@ public class SRWServlet extends AxisServlet {
                 parm=(String)parms.nextElement();
                 extension=srwInfo.getExtension(parm);
                 if(extension!=null) {
-                    if(!hasExtraRequestData)
+                    if(!hasExtraRequestData) {
                         sb.append("<srw:extraRequestData>");
+                        hasExtraRequestData=true;
+                    }
                     namespace=srwInfo.getNamespace(parm);
                     sb.append("    <").append(extension).append(" xmlns=\"").append(namespace).append("\"");
                     t=req.getParameter(parm);
@@ -1281,12 +1283,12 @@ public class SRWServlet extends AxisServlet {
                         sb.append(">").append(t).append("</").append(extension).append(">");
                     else
                         sb.append("/>");
-                    if(!hasExtraRequestData) {
-                        sb.append("    </srw:extraRequestData>");
-                        hasExtraRequestData=true;
-                    }
                 }
             }
+            if(hasExtraRequestData) {
+                sb.append("    </srw:extraRequestData>");
+            }
+
             
             
             sb.append("</srw:searchRetrieveRequest></soap:Body></soap:Envelope>");
