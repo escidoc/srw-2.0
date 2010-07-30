@@ -31,6 +31,7 @@
     	<!--MIH: also include packages de.escidoc.* in compilation -->
         <!--javac srcdir="src" destdir="build" deprecation="true" debug="on"
            includes="gov/**/*.java ORG/oclc/os/SRW/*.java"-->
+        <echo> Compiling with Java Version ${java.version}</echo>
 		<javac srcdir="${src.dir}" destdir="${build.dir}" deprecation="true" debug="on"
            includes="gov/**/*.java ORG/oclc/os/SRW/*.java de/escidoc/**/*.java">
               <classpath>
